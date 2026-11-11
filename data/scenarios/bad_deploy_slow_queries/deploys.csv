@@ -1,0 +1,6 @@
+time,author,commit_message,files_changed,diff_summary
+2026-11-11T10:25:28Z,alice,chore: update dependencies to latest stable versions,requirements.txt,"Bumped 12 packages, no logic changes"
+2026-11-11T11:25:28Z,bob,feat: add user preferences API endpoint,"api/users.py, models/user.py",Added GET/PUT /api/users/preferences endpoint with validation
+2026-11-11T12:25:28Z,carol,fix: correct email validation regex,utils/validation.py,Fixed regex to handle plus-sign in email local part
+2026-11-11T12:55:28Z,dave,docs: update API documentation for v2 endpoints,docs/api.md,"Updated 8 endpoint descriptions, added curl examples"
+2026-11-11T13:50:28Z,alice,feat: add order status dashboard — optimize schema for reporting,"migrations/0042_order_dashboard.py, models/order.py, api/orders.py","Added order status view, removed index on orders.status column (believed redundant for dashboard query pattern), added orders_reporting view"

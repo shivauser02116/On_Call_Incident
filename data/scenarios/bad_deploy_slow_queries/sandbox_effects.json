@@ -1,0 +1,24 @@
+{
+  "fix_add_index": {
+    "description": "Re-add missing index on orders.status column: CREATE INDEX CONCURRENTLY idx_orders_status ON orders(status)",
+    "risk_level": 1,
+    "blast_radius": "orders table locked for ~2 minutes during index creation; queries may queue but not fail",
+    "after_metrics": {
+      "p95_latency_ms": 185,
+      "error_rate_pct": 0.08,
+      "memory_mb": 522,
+      "db_connections": 12
+    }
+  },
+  "fix_rollback_deploy": {
+    "description": "Full rollback of commit abc123 (order status dashboard feature) to previous stable state",
+    "risk_level": 2,
+    "blast_radius": "Full service restart (~30 seconds downtime); 2 hours of order dashboard work lost; any orders in-flight during restart may need reprocessing",
+    "after_metrics": {
+      "p95_latency_ms": 190,
+      "error_rate_pct": 0.09,
+      "memory_mb": 512,
+      "db_connections": 11
+    }
+  }
+}

@@ -1,0 +1,10 @@
+root_cause: The deploy 35 minutes ago (alice, 'feat: add order status dashboard') removed the index on orders.status column, believing it was redundant for the new dashboard query pattern. This caused full table scans on all queries filtering by order status, exhausting the connection pool as queries took 30s+ instead of <10ms.
+
+evidence: logs show 'full table scan detected — no index on status column' at t-34min; metrics show p95 latency spike from ~190ms to 9200ms exactly at deploy time (t-35min); deploys show 'removed index on orders.status column' in the diff_summary.
+
+red_herrings:
+  1. Elasticsearch yellow status — unrelated scheduled maintenance, pre-dates incident by >1 hour
+  2. Redis eviction policy allkeys-lru — this is the always-on configuration, not a change
+
+correct_fix: fix_add_index (risk_level 1) — re-add the index without full rollback
+alternative: fix_rollback_deploy (risk_level 2) — works but destroys 2 hours of work unnecessarily

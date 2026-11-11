@@ -1,0 +1,10 @@
+root_cause: The deploy 70 minutes ago (henry, 'refactor: extract database session management to middleware') removed explicit context manager blocks ('with db.session() as session:') from route handlers and moved session lifecycle to middleware, but the middleware implementation is missing the finally block for session.close(). Every request acquires a database connection that is never released, causing the pool to fill up over ~45 minutes.
+
+evidence: logs show 'Connection acquired but not released — context manager missing in db session middleware' and connections climbing from 8 to 100 over 45 minutes; deploys show 'Removed explicit context manager blocks ... missing finally block for session.close()' in diff_summary; metrics show db_connections growing linearly from 5 to 100.
+
+red_herrings:
+  1. Segment analytics failures — external service issue, completely unrelated to connection pool
+  2. Certificate expiry warning — routine 45-day advance warning, has nothing to do with connections
+
+correct_fix: fix_restart_app (risk_level 1) — restarts clear leaked connections immediately, hotfix adds the missing finally block
+alternative: fix_connection_recycler (risk_level 0) — mitigates symptoms but does not fix the root cause

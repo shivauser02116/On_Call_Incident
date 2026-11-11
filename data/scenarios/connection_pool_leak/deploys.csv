@@ -1,0 +1,6 @@
+time,author,commit_message,files_changed,diff_summary
+2026-11-11T09:25:28Z,eve,feat: add product search with filters,"api/products.py, search/indexer.py","Added full-text search, filter by price/category"
+2026-11-11T11:05:28Z,frank,fix: correct pagination offset calculation,utils/pagination.py,Fixed off-by-one error in cursor-based pagination
+2026-11-11T11:55:28Z,grace,chore: upgrade SQLAlchemy to 2.0 compatibility,"requirements.txt, database/session.py",Updated session creation for SQLAlchemy 2.0 API
+2026-11-11T13:15:28Z,henry,refactor: extract database session management to middleware,"middleware/db_session.py, api/checkout.py, api/orders.py, api/products.py",Moved db session lifecycle from route handlers to middleware. Removed explicit 'with db.session() as session:' context manager blocks in handlers — session now injected by middleware. NOTE: middleware implementation missing finally block for session.close()
+2026-11-11T14:15:28Z,grace,docs: add middleware architecture diagram,docs/architecture.md,Added sequence diagram for request lifecycle

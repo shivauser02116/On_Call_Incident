@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Audit Log — OnCall Rehearsal Agent</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="sim-banner" role="banner">
+    ⚠️ SIMULATED ENVIRONMENT — All audit activity is captured in local SQLite
+  </div>
+
+  <header class="app-header">
+    <div class="header-left">
+      <span class="app-logo" aria-hidden="true">🔒</span>
+      <div>
+        <h1 class="app-title">Security & System Audit Log</h1>
+        <p class="app-tagline">Immutable record of all incident triggers, approvals, and logins</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <a href="/" class="btn-nav">← Back to Dashboard</a>
+    </div>
+  </header>
+
+  <main class="app-container">
+    <section class="card">
+      <div class="card-header">
+        <h2>Audit Trail Events</h2>
+        <span class="subtitle" id="audit-count-badge">Loading audit entries...</span>
+      </div>
+      <div class="audit-list" id="audit-page-entries"></div>
+    </section>
+  </main>
+
+  <script src="/static/audit.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "fix_restart_service": {
+    "description": "Emergency restart of all workers to clear accumulated memory (temporary \u2014 leak will recur)",
+    "risk_level": 0,
+    "blast_radius": "~20 seconds of downtime during rolling restart; memory returns to baseline but leak recurs without code fix",
+    "after_metrics": {
+      "p95_latency_ms": 90,
+      "error_rate_pct": 0.05,
+      "memory_mb": 525,
+      "db_connections": 11
+    }
+  },
+  "fix_patch_middleware": {
+    "description": "Deploy hotfix: remove module-level 'request_body_log' accumulation from logging_middleware.py, replace with bounded deque(maxlen=1000) or remove entirely",
+    "risk_level": 1,
+    "blast_radius": "Rolling deploy ~15s elevated latency; request body logging disabled until fix reviewed; accumulated log data lost (was not persisted anyway)",
+    "after_metrics": {
+      "p95_latency_ms": 88,
+      "error_rate_pct": 0.04,
+      "memory_mb": 518,
+      "db_connections": 10
+    }
+  },
+  "fix_increase_memory": {
+    "description": "Scale instance memory from 2.5GB to 8GB to delay OOM kills (does NOT fix leak)",
+    "risk_level": 2,
+    "blast_radius": "Full instance replacement required; costs 3x more; leak will fill 8GB in ~3 hours without code fix; misleading false stability",
+    "after_metrics": {
+      "p95_latency_ms": 88,
+      "error_rate_pct": 0.04,
+      "memory_mb": 2355,
+      "db_connections": 10
+    }
+  }
+}

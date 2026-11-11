@@ -1,0 +1,6 @@
+time,author,commit_message,files_changed,diff_summary
+2026-11-11T07:45:28Z,iris,feat: implement GraphQL API layer,"api/graphql.py, schema/types.py",Added GraphQL endpoint with schema introspection
+2026-11-11T09:25:28Z,jake,fix: handle edge case in date parsing,utils/dates.py,Fixed UTC offset parsing for ISO 8601 strings
+2026-11-11T11:05:28Z,karen,chore: add prometheus metrics endpoint,metrics/exporter.py,Added /metrics endpoint for Prometheus scraping
+2026-11-11T12:55:28Z,iris,feat: add comprehensive request/response logging middleware for debugging,"middleware/logging_middleware.py, app.py, config.py",New middleware logs full request and response bodies for debugging. Stores entries in module-level list 'request_body_log = []' for later analysis. No max size limit or TTL implemented. Runs on every request.
+2026-11-11T14:20:28Z,jake,docs: update deployment runbook,docs/runbook.md,Added rollback steps and health check commands

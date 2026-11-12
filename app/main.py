@@ -114,20 +114,61 @@ def create_app() -> FastAPI:
     app.include_router(admin_router)
     app.include_router(api_router)
 
-    # ── Static Files ───────────────────────────────────────────────────────
+    # ── Static Files & SPA Fallback ────────────────────────────────────────
+    import os
+
+    # Mount frontend dist assets if built, and preserve /static directory
+    if os.path.isdir("frontend/dist/assets"):
+        app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
     # ONLY serve the static/ directory.
     # data/, oncall.db, .env, .git are NOT mounted and return 404.
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
+    @app.get("/favicon.png", include_in_schema=False)
+    async def favicon() -> Response:
+        from fastapi.responses import FileResponse
+        if os.path.isfile("frontend/dist/favicon.png"):
+            return FileResponse("frontend/dist/favicon.png")
+        if os.path.isfile("static/favicon.png"):
+            return FileResponse("static/favicon.png")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Not found"})
+
     # Root → redirect to login if not authenticated, or index if authenticated
     @app.get("/", include_in_schema=False)
-    async def root(request: Request) -> JSONResponse:
-        from app.auth import validate_session
+    async def root(request: Request) -> Response:
+        from app.auth import validate_session, generate_csrf_token, set_csrf_cookie, CSRF_COOKIE_NAME
         from fastapi.responses import FileResponse, RedirectResponse
         user = validate_session(request)
         if not user:
             return RedirectResponse(url="/login", status_code=302)
-        return FileResponse("static/index.html")
+        dist_html = "frontend/dist/index.html"
+        file_path = dist_html if os.path.isfile(dist_html) else "static/index.html"
+        response = FileResponse(file_path)
+        if not request.cookies.get(CSRF_COOKIE_NAME):
+            csrf_token = generate_csrf_token()
+            set_csrf_cookie(response, csrf_token)
+        return response
+
+    # SPA route fallback for UI routes
+    UI_ROUTES = frozenset({"alert", "investigate", "theories", "fix", "decision", "success", "profile"})
+
+    @app.get("/{ui_path}", include_in_schema=False)
+    async def spa_route_fallback(request: Request, ui_path: str) -> Response:
+        from app.auth import validate_session, generate_csrf_token, set_csrf_cookie, CSRF_COOKIE_NAME
+        from fastapi.responses import FileResponse, RedirectResponse
+        if ui_path not in UI_ROUTES:
+            return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Not found"})
+        user = validate_session(request)
+        if not user:
+            return RedirectResponse(url=f"/login#{ui_path}", status_code=302)
+        dist_html = "frontend/dist/index.html"
+        file_path = dist_html if os.path.isfile(dist_html) else "static/index.html"
+        response = FileResponse(file_path)
+        if not request.cookies.get(CSRF_COOKIE_NAME):
+            csrf_token = generate_csrf_token()
+            set_csrf_cookie(response, csrf_token)
+        return response
 
     return app
 

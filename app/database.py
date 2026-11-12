@@ -165,6 +165,32 @@ def get_user_by_id(user_id: int) -> Optional[sqlite3.Row]:
         ).fetchone()
 
 
+def get_last_sign_in(user_id: int) -> Optional[str]:
+    """Return ISO timestamp of user's most recent login, or None."""
+    with get_db() as conn:
+        row = conn.execute(
+            """
+            SELECT created_at FROM audit_log
+            WHERE user_id = ? AND action = 'login_success'
+            ORDER BY id DESC LIMIT 1
+            """,
+            (user_id,),
+        ).fetchone()
+        if row:
+            return row["created_at"]
+        s_row = conn.execute(
+            """
+            SELECT created_at FROM sessions
+            WHERE user_id = ?
+            ORDER BY id DESC LIMIT 1
+            """,
+            (user_id,),
+        ).fetchone()
+        if s_row:
+            return s_row["created_at"]
+        return None
+
+
 def list_users() -> list[sqlite3.Row]:
     with get_db() as conn:
         return conn.execute(

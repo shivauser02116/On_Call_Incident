@@ -37,9 +37,7 @@ settings = get_settings()
 logging.basicConfig(level=settings.LOG_LEVEL)
 log = logging.getLogger(__name__)
 
-# ── Rate Limiter ───────────────────────────────────────────────────────────
-# Key function: IP address (slowapi default)
-limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+from app.limiter import limiter
 
 # ── Lifespan ───────────────────────────────────────────────────────────────
 

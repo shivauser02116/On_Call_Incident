@@ -116,6 +116,8 @@ export function Investigate() {
     setReplanReason,
     setAgentTrace,
     setAgentTotals,
+    blockedInstructions,
+    setBlockedInstructions,
   } = useNav()
 
   const [checks, setChecks] = useState<CheckItem[]>(() => {
@@ -246,6 +248,13 @@ export function Investigate() {
           setAgentPlan(ev.steps)
           setAgentPlanMeta({ source: ev.source === 'model' ? 'model' : 'standard', isMock: ev.is_mock !== false })
         }
+      } else if (ev.type === 'untrusted_instruction_blocked') {
+        if (ev.source_tool && ev.excerpt) {
+          setBlockedInstructions((prev) => [
+            ...prev,
+            { sourceTool: ev.source_tool, excerpt: ev.excerpt },
+          ])
+        }
       } else if (ev.type === 'tool_call_start') {
         const tool = ev.tool_name
         setChecks((prev) =>
@@ -346,6 +355,23 @@ export function Investigate() {
           </div>
         }
       />
+
+      {/* Untrusted Instruction Neutralized Notice (Phase 11) */}
+      {blockedInstructions.length > 0 && (
+        <div
+          data-testid="untrusted-instruction-notice"
+          className="flex items-start gap-3 rounded-2xl border border-line bg-panel p-4 text-[13px] text-mute leading-relaxed"
+        >
+          <Icon name="shield" size={18} className="mt-0.5 text-accent shrink-0" />
+          <div>
+            <span className="font-semibold text-ink">Untrusted instruction neutralized: </span>
+            <span>
+              An instruction marker was detected in telemetry ({blockedInstructions.map((b) => `${b.sourceTool}: "${b.excerpt}"`).join(', ')}).
+              The text was sanitized and treated strictly as passive data.
+            </span>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div

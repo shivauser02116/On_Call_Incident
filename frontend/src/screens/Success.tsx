@@ -2,6 +2,7 @@ import { ActionBar, Shell } from '../components/Frame'
 import { Icon } from '../components/Icon'
 import { useNav } from '../nav'
 import { Card, PrimaryButton } from '../components/ui'
+import { RecordOutcomeCard } from '../components/RecordOutcomeCard'
 
 const now = [
   ['Response time', '190 ms', 'was 2,340 ms'],
@@ -10,9 +11,10 @@ const now = [
 ]
 
 export function Success() {
-  const { go, setDiagnosed, investigationResult, setInvestigationResult, setRehearsalResult } = useNav()
+  const { go, setDiagnosed, investigationResult, setInvestigationResult, setRehearsalResult, selectedScenario } = useNav()
   const proposedFix = investigationResult?.proposed_fix
   const fixDescription = proposedFix?.action || 'orders(customer_id) index re-created'
+  const topHypothesis = investigationResult?.hypotheses?.[0]
 
   const handleBackToStart = () => {
     setDiagnosed(false)
@@ -57,6 +59,17 @@ export function Success() {
             ))}
           </ul>
         </Card>
+
+        {/* Phase 12: Record outcome in incident memory */}
+        <div className="w-full">
+          <RecordOutcomeCard
+            scenarioId={selectedScenario || 'bad_deploy_slow_queries'}
+            cause={topHypothesis?.cause || 'Missing database index'}
+            fix={fixDescription}
+            defaultOutcome="worked"
+          />
+        </div>
+
         <p className="mt-5 flex items-center gap-2 text-[13px] text-faint">
           <Icon name="undo" size={14} /> This change can be undone at any time.
         </p>

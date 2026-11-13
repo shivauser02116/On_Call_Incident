@@ -6,6 +6,7 @@ import { Investigate } from './screens/Investigate'
 import { Login } from './screens/Login'
 import { Profile } from './screens/Profile'
 import { Stopwatch } from './screens/Stopwatch'
+import { AuditLog } from './screens/AuditLog'
 import { Success } from './screens/Success'
 import { Theories } from './screens/Theories'
 
@@ -19,6 +20,7 @@ const screens = {
   success: Success,
   profile: Profile,
   stopwatch: Stopwatch,
+  audit: AuditLog,
 }
 
 function Screen() {

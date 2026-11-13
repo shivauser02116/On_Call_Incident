@@ -1,8 +1,16 @@
 import { useState } from 'react'
 import { Icon } from './Icon'
 
-export function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-line bg-panel ${className}`}>{children}</div>
+export function Card({
+  children,
+  className = '',
+  ...rest
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`rounded-2xl border border-line bg-panel ${className}`} {...rest}>
+      {children}
+    </div>
+  )
 }
 
 export function PageHeader({ eyebrow, title, sub, right }: { eyebrow?: React.ReactNode; title: string; sub?: string; right?: React.ReactNode }) {

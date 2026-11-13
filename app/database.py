@@ -107,11 +107,23 @@ CREATE TABLE IF NOT EXISTS audit_log (
     created_at  TEXT    NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS incident_memory (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    scenario_id TEXT    NOT NULL,
+    cause       TEXT    NOT NULL,
+    fix         TEXT    NOT NULL,
+    outcome     TEXT    NOT NULL,
+    timestamp   TEXT    NOT NULL,
+    username    TEXT    NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_token_hash   ON sessions(token_hash);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at   ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_investigations_user_id ON investigations(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_log_user_id      ON audit_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_log_created_at   ON audit_log(created_at);
+CREATE INDEX IF NOT EXISTS idx_incident_memory_scenario ON incident_memory(scenario_id);
+CREATE INDEX IF NOT EXISTS idx_incident_memory_timestamp ON incident_memory(timestamp);
 """
 
 
@@ -425,3 +437,70 @@ def get_audit_log(
             """,
             (limit, offset),
         ).fetchall()
+
+
+# ── Incident Memory Operations (Phase 12) ──────────────────────────────────
+
+def save_incident_memory(
+    scenario_id: str,
+    cause: str,
+    fix: str,
+    outcome: str,
+    username: str,
+) -> int:
+    """Store a structured incident memory record."""
+    with get_db() as conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO incident_memory (scenario_id, cause, fix, outcome, timestamp, username)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (scenario_id, cause, fix, outcome, _now_iso(), username),
+        )
+        return cursor.lastrowid
+
+
+def list_incident_memories(
+    scenario_id: Optional[str] = None,
+    limit: int = 50,
+) -> list[sqlite3.Row]:
+    """Retrieve saved incident memories, optionally filtered by scenario."""
+    with get_db() as conn:
+        if scenario_id:
+            return conn.execute(
+                """
+                SELECT * FROM incident_memory
+                WHERE scenario_id = ?
+                ORDER BY timestamp DESC
+                LIMIT ?
+                """,
+                (scenario_id, limit),
+            ).fetchall()
+        return conn.execute(
+            """
+            SELECT * FROM incident_memory
+            ORDER BY timestamp DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+
+def get_incident_memory(memory_id: int) -> Optional[sqlite3.Row]:
+    """Fetch a single incident memory by ID."""
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM incident_memory WHERE id = ?",
+            (memory_id,),
+        ).fetchone()
+
+
+def delete_incident_memory(memory_id: int) -> bool:
+    """Delete an incident memory record. Returns True if deleted."""
+    with get_db() as conn:
+        cursor = conn.execute(
+            "DELETE FROM incident_memory WHERE id = ?",
+            (memory_id,),
+        )
+        return cursor.rowcount > 0
+

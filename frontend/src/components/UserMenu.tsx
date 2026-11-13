@@ -32,7 +32,9 @@ export function RoleBadge({ role }: { role?: string }) {
   )
 }
 
-function Items({ onPick, tall }: { onPick: (a: 'profile' | 'signout') => void; tall?: boolean }) {
+function Items({ onPick, tall }: { onPick: (a: 'profile' | 'audit' | 'signout') => void; tall?: boolean }) {
+  const { currentUser } = useNav()
+  const isAdmin = currentUser?.role?.toLowerCase() === 'admin'
   const row = `flex w-full items-center gap-3 px-4 text-left text-[14.5px] transition-colors ${
     tall ? 'min-h-14' : 'min-h-11'
   }`
@@ -41,6 +43,16 @@ function Items({ onPick, tall }: { onPick: (a: 'profile' | 'signout') => void; t
       <button role="menuitem" onClick={() => onPick('profile')} className={`${row} text-ink hover:bg-panel-2`}>
         <Icon name="user" size={18} className="text-mute" /> View profile
       </button>
+      {isAdmin && (
+        <button
+          role="menuitem"
+          data-testid="nav-audit-log"
+          onClick={() => onPick('audit')}
+          className={`${row} text-ink hover:bg-panel-2`}
+        >
+          <Icon name="logs" size={18} className="text-mute" /> Audit log
+        </button>
+      )}
       <div role="separator" className="my-1.5 h-px bg-line" />
       <button role="menuitem" onClick={() => onPick('signout')} className={`${row} text-ink hover:bg-panel-2`}>
         <Icon name="logout" size={18} className="text-mute" /> Sign out
@@ -73,9 +85,10 @@ export function UserMenu({ mode }: { mode: 'bar' | 'sheet' }) {
     }
   }, [open, mode])
 
-  const pick = (a: 'profile' | 'signout') => {
+  const pick = (a: 'profile' | 'audit' | 'signout') => {
     setOpen(false)
     if (a === 'profile') go('profile')
+    else if (a === 'audit') go('audit')
     else signOut()
   }
 

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
-export type Route = 'login' | 'alert' | 'investigate' | 'theories' | 'fix' | 'decision' | 'success' | 'profile' | 'stopwatch'
+export type Route = 'login' | 'alert' | 'investigate' | 'theories' | 'fix' | 'decision' | 'success' | 'profile' | 'stopwatch' | 'audit'
 export type Variant = 'default' | 'risky' | 'error' | 'menu'
 
 // Step index in the sidebar -> screen
@@ -12,7 +12,7 @@ export const backOf: Partial<Record<Route, Route>> = {
   decision: 'fix',
 }
 
-const routes: Route[] = ['login', 'alert', 'investigate', 'theories', 'fix', 'decision', 'success', 'profile', 'stopwatch']
+const routes: Route[] = ['login', 'alert', 'investigate', 'theories', 'fix', 'decision', 'success', 'profile', 'stopwatch', 'audit']
 
 function parse(hash: string): { route: Route; variant: Variant } {
   const key = hash.replace('#', '')
@@ -132,6 +132,8 @@ type Nav = {
   setAgentTrace: React.Dispatch<React.SetStateAction<TraceStep[]>>
   agentTotals: AgentTotals | null
   setAgentTotals: React.Dispatch<React.SetStateAction<AgentTotals | null>>
+  blockedInstructions: Array<{ sourceTool: string; excerpt: string }>
+  setBlockedInstructions: React.Dispatch<React.SetStateAction<Array<{ sourceTool: string; excerpt: string }>>>
 }
 
 const Ctx = createContext<Nav | null>(null)
@@ -150,6 +152,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
   const [replanReason, setReplanReason] = useState<string | null>(null)
   const [agentTrace, setAgentTrace] = useState<TraceStep[]>([])
   const [agentTotals, setAgentTotals] = useState<AgentTotals | null>(null)
+  const [blockedInstructions, setBlockedInstructions] = useState<Array<{ sourceTool: string; excerpt: string }>>([])
 
   const routeRef = useRef(loc.route)
   routeRef.current = loc.route
@@ -197,6 +200,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     setReplanReason(null)
     setAgentTrace([])
     setAgentTotals(null)
+    setBlockedInstructions([])
     window.location.hash = 'login'
   }, [])
 
@@ -229,6 +233,8 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
         setAgentTrace,
         agentTotals,
         setAgentTotals,
+        blockedInstructions,
+        setBlockedInstructions,
       }}
     >
       {children}

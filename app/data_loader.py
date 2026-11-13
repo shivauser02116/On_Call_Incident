@@ -93,10 +93,13 @@ def _sanitize_string(value: str) -> str:
     Tool output is wrapped in delimiters in the agent layer, but we also
     sanitize here as a defence-in-depth measure.
     """
+    from app.sanitizer import detect_and_neutralize
     # Remove null bytes
     value = value.replace("\x00", "")
     # Strip ANSI escape codes
     value = re.sub(r"\x1b\[[0-9;]*m", "", value)
+    # Neutralize script tags and prompt injection markers
+    value, _ = detect_and_neutralize(value)
     return value
 
 
@@ -313,27 +316,58 @@ def load_sandbox_effects(scenario_id: str) -> dict[str, Any]:
 
 def search_past_incidents(query: str) -> list[dict[str, Any]]:
     """
-    Simple keyword-score search over past_incidents.csv.
+    Simple keyword-score search over past_incidents.csv AND team incident memory.
 
+    Saved records are tagged 'from your team' and formatted as passive untrusted observations.
     Returns up to 5 most relevant incidents, scored by keyword overlap.
     """
-    if not _PAST_INCIDENTS_PATH.exists():
-        return []
-
-    rows = _read_csv(_PAST_INCIDENTS_PATH)
-    query_tokens = set(query.lower().split())
+    query_tokens = set(query.lower().split()) if query else set()
 
     scored: list[tuple[int, dict[str, Any]]] = []
-    for row in rows:
-        # Score = number of query tokens found in symptoms + root_cause + fix
-        text = " ".join([
-            row.get("symptoms", ""),
-            row.get("root_cause", ""),
-            row.get("fix", ""),
-        ]).lower()
-        score = sum(1 for token in query_tokens if token in text)
-        if score > 0:
-            scored.append((score, row))
+
+    # 1. Search static past_incidents.csv
+    if _PAST_INCIDENTS_PATH.exists():
+        rows = _read_csv(_PAST_INCIDENTS_PATH)
+        for row in rows:
+            text = " ".join([
+                row.get("symptoms", ""),
+                row.get("root_cause", ""),
+                row.get("fix", ""),
+            ]).lower()
+            score = sum(1 for token in query_tokens if token in text) if query_tokens else 1
+            if score > 0 or not query_tokens:
+                scored.append((score, row))
+
+    # 2. Search saved team incident memories (Phase 12)
+    try:
+        from app import database as db
+        memories = db.list_incident_memories(limit=100)
+        for mem in memories:
+            row_dict = dict(mem)
+            cause = _sanitize_string(str(row_dict.get("cause", "")))
+            fix = _sanitize_string(str(row_dict.get("fix", "")))
+            outcome = _sanitize_string(str(row_dict.get("outcome", "")))
+            scenario_id = _sanitize_string(str(row_dict.get("scenario_id", "")))
+            username = _sanitize_string(str(row_dict.get("username", "teammate")))
+
+            text = f"{scenario_id} {cause} {fix} {outcome}".lower()
+            score = sum(1 for token in query_tokens if token in text) if query_tokens else 1
+            if score > 0 or not query_tokens:
+                item = {
+                    "incident_id": f"MEM-{row_dict.get('id')}",
+                    "title": f"Incident {scenario_id} ({outcome})",
+                    "symptoms": cause,
+                    "root_cause": cause,
+                    "fix": fix,
+                    "outcome": outcome,
+                    "source": "from your team",
+                    "recorded_by": username,
+                    "timestamp": str(row_dict.get("timestamp", "")),
+                }
+                # Boost team memory slightly so relevant teammate experience surfaces
+                scored.append((score + 1, item))
+    except Exception:
+        pass  # DB might not be initialized in isolation tests
 
     # Sort descending by score, return top 5
     scored.sort(key=lambda x: x[0], reverse=True)

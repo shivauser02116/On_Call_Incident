@@ -21,17 +21,26 @@ from app.agent import AgentRunner
 from app.auth import (
     AuthenticatedUser,
     CSRF_COOKIE_NAME,
+    require_admin,
     require_auth,
     verify_csrf_token,
 )
 from app.data_loader import (
     load_all_scenarios_metadata,
+    load_deploys,
     load_logs,
     load_sandbox_effects,
     validate_scenario_id,
 )
 from app.limiter import limiter
-from app.models import ALLOWED_FIX_IDS, ALLOWED_SCENARIOS, ApproveFixRequest, TriggerAlertRequest
+from app.models import (
+    ALLOWED_FIX_IDS,
+    ALLOWED_SCENARIOS,
+    ApproveFixRequest,
+    DeleteIncidentMemoryRequest,
+    SaveIncidentMemoryRequest,
+    TriggerAlertRequest,
+)
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -401,3 +410,137 @@ async def approve_investigation_fix(
         "blast_radius": blast_radius,
         "message": f"Fix {fix_id} (Level {risk_level}) approved and executed in simulation.",
     })
+
+
+# ── Scenario Deploys (Phase 12) ────────────────────────────────────────────
+
+@router.get("/scenarios/{scenario_id}/deploys")
+@limiter.limit("60/minute")
+async def get_scenario_deploys(
+    request: Request,
+    scenario_id: str,
+    user: AuthenticatedUser = Depends(require_auth),
+) -> JSONResponse:
+    """Return recent deployment records (including code diffs) for a scenario."""
+    try:
+        valid_sid = validate_scenario_id(scenario_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid scenario_id")
+
+    deploys = load_deploys(valid_sid)
+    return JSONResponse(content={"scenario_id": valid_sid, "deploys": deploys, "count": len(deploys)})
+
+
+# ── Incident Memory Routes (Phase 12) ──────────────────────────────────────
+
+@router.post("/incidents/memory")
+@limiter.limit("30/minute")
+async def save_incident_memory(
+    request: Request,
+    body: SaveIncidentMemoryRequest,
+    user: AuthenticatedUser = Depends(require_auth),
+) -> JSONResponse:
+    """Save an incident outcome record for team memory."""
+    # 1. CSRF validation
+    csrf_cookie = request.cookies.get(CSRF_COOKIE_NAME)
+    if not verify_csrf_token(body.csrf_token, csrf_cookie):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing CSRF token",
+        )
+
+    # 2. Scenario allowlist validation
+    try:
+        valid_sid = validate_scenario_id(body.scenario_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid scenario_id")
+
+    # 3. Clean and store plain text (limit <= 280 chars)
+    from app.data_loader import _sanitize_string
+    cause_clean = _sanitize_string(body.cause.strip())[:512]
+    fix_clean = _sanitize_string(body.fix.strip())[:512]
+    outcome_clean = _sanitize_string(body.outcome.strip())[:280]
+
+    memory_id = db.save_incident_memory(
+        scenario_id=valid_sid,
+        cause=cause_clean,
+        fix=fix_clean,
+        outcome=outcome_clean,
+        username=user.username,
+    )
+
+    client_ip = request.client.host if request.client else "unknown"
+    db.log_audit(
+        action="incident_memory_created",
+        user_id=user.user_id,
+        target_id=str(memory_id),
+        details={"scenario_id": valid_sid, "outcome": outcome_clean},
+        ip_address=client_ip,
+    )
+
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={
+            "status": "created",
+            "id": memory_id,
+            "message": "Incident memory saved successfully.",
+        },
+    )
+
+
+@router.get("/incidents/memory")
+@limiter.limit("60/minute")
+async def list_incident_memories(
+    request: Request,
+    scenario_id: Optional[str] = None,
+    user: AuthenticatedUser = Depends(require_auth),
+) -> JSONResponse:
+    """Retrieve saved team incident memory records."""
+    if scenario_id:
+        try:
+            scenario_id = validate_scenario_id(scenario_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid scenario_id")
+
+    rows = db.list_incident_memories(scenario_id=scenario_id, limit=50)
+    return JSONResponse(content={
+        "memories": [dict(r) for r in rows],
+        "count": len(rows),
+    })
+
+
+@router.delete("/incidents/memory/{memory_id}")
+@limiter.limit("30/minute")
+async def delete_incident_memory(
+    request: Request,
+    memory_id: int = Path(ge=1),
+    admin: AuthenticatedUser = Depends(require_admin),
+) -> JSONResponse:
+    """Admin-only deletion of incident memory records."""
+    # CSRF check
+    csrf_header = request.headers.get("X-CSRF-Token") or request.query_params.get("csrf_token")
+    csrf_cookie = request.cookies.get(CSRF_COOKIE_NAME)
+    if not verify_csrf_token(csrf_header or "", csrf_cookie):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing CSRF token",
+        )
+
+    existing = db.get_incident_memory(memory_id)
+    if not existing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incident memory not found")
+
+    deleted = db.delete_incident_memory(memory_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incident memory not found")
+
+    client_ip = request.client.host if request.client else "unknown"
+    db.log_audit(
+        action="incident_memory_deleted",
+        user_id=admin.user_id,
+        target_id=str(memory_id),
+        details={"scenario_id": existing["scenario_id"]},
+        ip_address=client_ip,
+    )
+
+    return JSONResponse(content={"status": "deleted", "id": memory_id})

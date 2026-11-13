@@ -4,7 +4,7 @@ import { Card, Chip } from './ui'
 import { useNav } from '../nav'
 
 export function AgentTraceDrawer() {
-  const { agentTrace, agentTotals, replanReason, agentPlanMeta } = useNav()
+  const { agentTrace, agentTotals, replanReason, agentPlanMeta, blockedInstructions } = useNav()
   const [open, setOpen] = useState(false)
 
   const isMock = agentTotals?.isMock !== false // defaults to simulated unless explicitly false
@@ -93,6 +93,20 @@ export function AgentTraceDrawer() {
                 <span className="font-semibold">Replan Triggered: </span>
                 {replanReason}
               </div>
+            </div>
+          )}
+
+          {/* Untrusted instruction blocked notice (Phase 11) */}
+          {blockedInstructions.length > 0 && (
+            <div
+              data-testid="trace-untrusted-notice"
+              className="flex items-center gap-2.5 rounded-xl border border-line bg-panel p-3 text-[12.5px] text-mute"
+            >
+              <Icon name="shield" size={15} className="text-accent shrink-0" />
+              <span>
+                Untrusted instruction neutralized in telemetry:{' '}
+                {blockedInstructions.map((b) => `${b.sourceTool} ("${b.excerpt}")`).join('; ')}
+              </span>
             </div>
           )}
 

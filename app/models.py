@@ -161,6 +161,31 @@ class ReplanEvent(BaseModel):
     steps: list[PlanStep] = Field(min_length=1)
 
 
+class UntrustedInstructionBlockedEvent(BaseModel):
+    model_config = ConfigDict(strict=False)
+
+    type: Literal["untrusted_instruction_blocked"] = "untrusted_instruction_blocked"
+    source_tool: str = Field(max_length=128)
+    excerpt: str = Field(max_length=256)
+    timestamp: Optional[str] = None
+
+
+class SaveIncidentMemoryRequest(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    scenario_id: str = Field(min_length=1, max_length=64)
+    cause: str = Field(min_length=1, max_length=512)
+    fix: str = Field(min_length=1, max_length=512)
+    outcome: str = Field(min_length=1, max_length=280)
+    csrf_token: str = Field(min_length=32, max_length=128)
+
+
+class DeleteIncidentMemoryRequest(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    csrf_token: str = Field(min_length=32, max_length=128)
+
+
 class LockUserRequest(BaseModel):
     model_config = ConfigDict(strict=True)
 

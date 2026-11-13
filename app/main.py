@@ -223,7 +223,7 @@ def create_app() -> FastAPI:
         return response
 
     # SPA route fallback for UI routes
-    UI_ROUTES = frozenset({"alert", "investigate", "theories", "fix", "decision", "success", "profile", "stopwatch"})
+    UI_ROUTES = frozenset({"alert", "investigate", "theories", "fix", "decision", "success", "profile", "stopwatch", "audit"})
 
     @app.get("/{ui_path}", include_in_schema=False)
     async def spa_route_fallback(request: Request, ui_path: str) -> Response:

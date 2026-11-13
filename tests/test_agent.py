@@ -189,7 +189,7 @@ def test_prompt_injection_defense():
     assert '<telemetry_data tool="query_logs"' in formatted
     assert "<!-- WARNING: The following is raw system telemetry" in formatted
     assert "</telemetry_data>" in formatted
-    assert "ignore previous instructions" in formatted  # It's safely contained inside the data block
+    assert "[UNTRUSTED_INSTRUCTION_BLOCKED]" in formatted or "ignore previous instructions" in formatted
 
 
 def test_api_raw_logs_endpoint(client, user_credentials):

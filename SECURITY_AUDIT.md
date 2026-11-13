@@ -10,9 +10,9 @@
 
 | Category | Total Requirements | DONE | PARTIAL | NOT DONE |
 |---|---|---|---|---|
-| **Security Controls** | 16 | 15 | 1 | 0 |
+| **Security Controls** | 16 | 16 | 0 | 0 |
 
-**Result**: PASS (with 1 PARTIAL noted for upstream dependency audit) — Ready for evaluation and deployment.
+**Result**: PASS (all 16 controls DONE) — Ready for evaluation and deployment.
 
 ---
 
@@ -139,19 +139,16 @@
 ---
 
 ### 10. Dependency Management & Vulnerability Scanning
-- **Status**: **PARTIAL**
-- **Evidence**:
-  - `requirements.txt`: All packages pinned with exact versions (`fastapi==0.115.5`, `uvicorn[standard]==0.32.1`, `pydantic==2.10.3`, `argon2-cffi==23.1.0`, `python-multipart==0.0.33`, etc.).
-  - `pip-audit -r requirements.txt`: Executed on 2026-11-13.
-    - Findings: 16 vulnerabilities reported across 2 packages:
-      - `starlette==0.41.3` (15 advisories: PYSEC-2026-1941, PYSEC-2026-1942, PYSEC-2026-161, PYSEC-2026-2281, PYSEC-2026-2280, PYSEC-2026-249, PYSEC-2026-248). Pulled transitively by `fastapi==0.115.5`. Full resolution requires upgrading to FastAPI 0.162+ / Starlette 1.10.0+ in coordination with test runner dependencies.
-      - `pytest==8.3.4` (1 advisory: PYSEC-2026-1845; fix version 9.0.3). Note: `pytest` is a development/testing dependency only, excluded from production Docker runtime via `.dockerignore`.
-  - Frontend Dependency Audit (`corepack pnpm --dir frontend audit`):
-    - `pnpm audit --prod`: **0 vulnerabilities** found in production runtime dependencies.
-    - `pnpm audit` (default including devDependencies): 7 vulnerabilities found in dev-time build tool `vite` (moderate/high relating to `launch-editor` Windows path handling and `server.fs.deny` bypass on Windows). Vite is strictly a build tool; static assets in `dist/` contain no Vite runtime code.
-    - `npm audit` on frontend fails with `npm error code ENOLOCK` because dependencies are managed via `pnpm-lock.yaml`, not `package-lock.json`.
-- **Remaining Risks**: Starlette vulnerabilities in the backend ASGI layer need coordinated upgrade when FastAPI releases full compatibility patches.
-- **Manual Verification**: Run `pip-audit -r requirements.txt` and `corepack pnpm --dir frontend audit --prod`.
+- **Status**: **DONE**
+- **Evidence** (updated 2026-11-13, Phase 8):
+  - `requirements.txt`: All packages pinned with exact versions.
+  - **pip-audit**: `pip-audit -r requirements.txt` → **No known vulnerabilities found** (0 findings).
+    - Upgraded: `fastapi==0.162.5`, `starlette==1.10.0` (resolved all 15 starlette PYSEC advisories), `uvicorn[standard]==0.54.0`, `pytest==9.2.0`, `pytest-asyncio==1.5.0` (resolved PYSEC-2026-1845).
+  - **Frontend audit**: `corepack pnpm --dir frontend audit` → **No known vulnerabilities found** (0 findings).
+    - Upgraded: `vite` from 8.0.5 → 8.3.8 (resolved all `launch-editor`/`server.fs.deny` advisories).
+  - Previous 16 advisories across starlette (15) and pytest (1) are fully resolved.
+- **Remaining Risks**: None.
+- **Manual Verification**: Run `pip-audit -r requirements.txt` and `corepack pnpm --dir frontend audit`.
 
 ---
 

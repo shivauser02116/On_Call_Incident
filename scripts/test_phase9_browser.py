@@ -80,12 +80,12 @@ try:
         page.wait_for_url(lambda u: "alert" in u)
         print("PASS 1: Authenticated & navigated to Alert")
 
-        # 2. Select ambiguous_escalate to test both Plan and Replan
+        # 2. Select config_change_flag to test both Plan and Replan + standard Decision RiskScale
         page.wait_for_selector("select")
-        page.select_option("select", "ambiguous_escalate")
+        page.select_option("select", "config_change_flag")
         page.click("button:has-text('Start investigation')")
         page.wait_for_url(lambda u: "investigate" in u)
-        print("PASS 2: Triggered ambiguous_escalate investigation, arrived at Investigate")
+        print("PASS 2: Triggered config_change_flag investigation, arrived at Investigate")
 
         # 3. Check for Investigation Plan checklist
         page.wait_for_selector("text=Investigation Plan", timeout=6000)
@@ -142,7 +142,7 @@ try:
         print(f"Captured screenshot: {SCREENSHOTS_DIR / '14_theories_agent_trace.png'}")
 
         # 9. Test Back button navigation
-        back_btn = page.locator("button:has-text('Back')")
+        back_btn = page.get_by_role("button", name="Back", exact=True)
         back_btn.click()
         page.wait_for_url(lambda u: "investigate" in u, timeout=5000)
         print("PASS 9: Back button from Theories navigated back to Investigate")

@@ -16,8 +16,10 @@ __pycache__/
 *.so
 *.egg
 *.egg-info/
-dist/
+/dist/
 build/
+!frontend/dist/
+!frontend/dist/**
 .eggs/
 
 # Virtual environments

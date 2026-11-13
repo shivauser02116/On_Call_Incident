@@ -2,11 +2,15 @@
 OnCall Rehearsal Agent — Agent Loop & Orchestrator
 
 Handles:
-  - Anthropic SDK tool-use loop
+  - Anthropic SDK tool-use loop (live mode via CLAUDE_MODEL / ANTHROPIC_API_KEY)
+  - Explicit mock mode: ONLY when AGENT_MODE=mock is set in the environment.
+    No silent fallback — if the API key is missing or invalid in live mode
+    the agent returns an error SSE event, it does NOT fall through to simulation.
   - Hard cap of 12 tool calls per investigation
   - Defense-in-depth prompt injection mitigation
   - Pydantic validation of agent output with 1 retry on invalid format
   - Streaming event generation for SSE client UI
+  - Anthropic API error handling: rate-limit (429), no credits (402/529), timeout
 """
 from __future__ import annotations
 
@@ -20,7 +24,6 @@ from app.config import get_settings
 from app.data_loader import validate_scenario_id
 from app.models import Hypothesis, InvestigationResult, ProposedFix
 from app.tools import TOOL_DEFINITIONS, execute_tool
-
 settings = get_settings()
 log = logging.getLogger(__name__)
 
@@ -107,11 +110,10 @@ class AgentRunner:
         self.scenario_id = validate_scenario_id(scenario_id)
         self.max_tool_calls = settings.MAX_TOOL_CALLS_PER_INVESTIGATION
         self.tool_call_count = 0
-        self.is_mock = (
-            not settings.ANTHROPIC_API_KEY
-            or settings.ANTHROPIC_API_KEY.startswith("test-")
-            or settings.ANTHROPIC_API_KEY.startswith("dummy-")
-        )
+        # is_mock is True ONLY when explicitly set via AGENT_MODE=mock.
+        # No silent fallback — an absent or test-prefixed key causes an error
+        # in live mode so operators know immediately that the key is missing.
+        self.is_mock = settings.AGENT_MODE == "mock"
 
     async def run(self) -> AsyncGenerator[dict[str, Any], None]:
         """Async generator yielding SSE events through the investigation lifecycle."""
@@ -119,6 +121,7 @@ class AgentRunner:
             "type": "investigation_started",
             "scenario_id": self.scenario_id,
             "max_tool_calls": self.max_tool_calls,
+            "agent_mode": "mock" if self.is_mock else "live",
         }
 
         if self.is_mock:
@@ -649,120 +652,213 @@ class AgentRunner:
             )
 
     async def _run_live_anthropic(self) -> AsyncGenerator[dict[str, Any], None]:
-        """Execute investigation using Anthropic Claude with tool calling."""
+        """Execute investigation using Anthropic Claude with tool calling.
+
+        Error handling (no silent fallback to simulation):
+          - RateLimitError (HTTP 429)  → error SSE with retry advice
+          - AuthenticationError (401)  → error SSE, key problem
+          - PermissionDeniedError/402/529 credits exhausted → error SSE
+          - APIConnectionError / timeout → error SSE with retry advice
+          - Any other APIError         → error SSE with sanitised message
+        """
         client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
         messages: list[dict[str, Any]] = [
             {
                 "role": "user",
-                "content": f"A critical production alert has fired for scenario '{self.scenario_id}'. Please investigate using your tools, rehearse a fix in the sandbox, and present your 3 hypotheses and proposed fix.",
+                "content": (
+                    f"A critical production alert has fired for scenario '{self.scenario_id}'. "
+                    "Please investigate using your tools, rehearse a fix in the sandbox, "
+                    "and present your 3 hypotheses and proposed fix."
+                ),
             }
         ]
 
         attempt_validation = 0
-        while self.tool_call_count < self.max_tool_calls:
-            response = await client.messages.create(
-                model=settings.CLAUDE_MODEL,
-                max_tokens=4096,
-                system=SYSTEM_PROMPT,
-                messages=messages,
-                tools=TOOL_DEFINITIONS,
-            )
+        try:
+            while self.tool_call_count < self.max_tool_calls:
+                response = await client.messages.create(
+                    model=settings.CLAUDE_MODEL,
+                    max_tokens=settings.MAX_TOKENS_PER_INVESTIGATION,
+                    system=SYSTEM_PROMPT,
+                    messages=messages,
+                    tools=TOOL_DEFINITIONS,
+                )
 
-            # Process assistant turn
-            tool_calls = [c for c in response.content if c.type == "tool_use"]
-            text_blocks = [c.text for c in response.content if c.type == "text"]
+                # Process assistant turn
+                tool_calls = [c for c in response.content if c.type == "tool_use"]
+                text_blocks = [c.text for c in response.content if c.type == "text"]
 
-            # Append assistant message to history
-            messages.append({"role": "assistant", "content": response.content})
+                # Append assistant message to history
+                messages.append({"role": "assistant", "content": response.content})
 
-            if not tool_calls:
-                # Agent decided to conclude. Try to parse JSON output.
-                combined_text = "\n".join(text_blocks)
-                parsed = _extract_json_block(combined_text)
+                if not tool_calls:
+                    # Agent decided to conclude. Try to parse JSON output.
+                    combined_text = "\n".join(text_blocks)
+                    parsed = _extract_json_block(combined_text)
 
-                if parsed:
-                    try:
-                        validated = InvestigationResult.model_validate(parsed)
+                    if parsed:
+                        try:
+                            validated = InvestigationResult.model_validate(parsed)
+                            yield {
+                                "type": "investigation_completed",
+                                "scenario_id": self.scenario_id,
+                                "tool_calls_used": self.tool_call_count,
+                                "result": validated.model_dump(),
+                            }
+                            return
+                        except Exception as e:
+                            log.warning("Agent output schema validation failed: %s", e)
+
+                    # Retry once if validation failed or no JSON found
+                    if attempt_validation == 0:
+                        attempt_validation += 1
+                        messages.append({
+                            "role": "user",
+                            "content": (
+                                "Your response did not contain a valid JSON block conforming "
+                                "to the InvestigationResult schema (exactly 3 hypotheses, "
+                                "evidence with tool_call and source_row, proposed_fix). "
+                                "Please output the final JSON now inside a ```json ... ``` block."
+                            ),
+                        })
+                        continue
+                    else:
                         yield {
-                            "type": "investigation_completed",
-                            "scenario_id": self.scenario_id,
-                            "tool_calls_used": self.tool_call_count,
-                            "result": validated.model_dump(),
+                            "type": "error",
+                            "code": "schema_validation_failed",
+                            "message": (
+                                "The agent did not produce a valid investigation result "
+                                "after one retry. Please try again."
+                            ),
                         }
                         return
-                    except Exception as e:
-                        log.warning("Agent output schema validation failed: %s", e)
 
-                # Retry once if validation failed or no JSON found
-                if attempt_validation == 0:
-                    attempt_validation += 1
-                    messages.append({
-                        "role": "user",
-                        "content": "Your response did not contain a valid JSON block conforming to the InvestigationResult schema (exactly 3 hypotheses, evidence with tool_call and source_row, proposed_fix). Please output the final JSON now inside a ```json ... ``` block.",
+                # Execute tool calls
+                tool_result_content = []
+                for tc in tool_calls:
+                    if self.tool_call_count >= self.max_tool_calls:
+                        yield {
+                            "type": "tool_cap_reached",
+                            "count": self.tool_call_count,
+                            "max": self.max_tool_calls,
+                        }
+                        break
+
+                    self.tool_call_count += 1
+                    yield {
+                        "type": "tool_call_start",
+                        "tool_call_index": self.tool_call_count,
+                        "tool_name": tc.name,
+                        "arguments": tc.input,
+                    }
+
+                    raw_output = execute_tool(self.scenario_id, tc.name, tc.input)
+
+                    # Parse data for UI event
+                    parsed_data = None
+                    try:
+                        m = re.search(r"<telemetry_data[^>]*>(.*?)</telemetry_data>", raw_output, re.DOTALL)
+                        if m:
+                            content_clean = re.sub(r"<!--.*?-->", "", m.group(1)).strip()
+                            parsed_data = json.loads(content_clean)
+                    except Exception:
+                        parsed_data = {"raw": raw_output[:200]}
+
+                    yield {
+                        "type": "tool_call_result",
+                        "tool_call_index": self.tool_call_count,
+                        "tool_name": tc.name,
+                        "data": parsed_data,
+                    }
+
+                    if tc.name == "run_in_sandbox" and isinstance(parsed_data, dict):
+                        yield {
+                            "type": "rehearsal_result",
+                            "fix_id": parsed_data.get("fix_id"),
+                            "risk_level": parsed_data.get("risk_level"),
+                            "blast_radius": parsed_data.get("blast_radius"),
+                            "before_metrics": parsed_data.get("before_metrics"),
+                            "after_metrics": parsed_data.get("after_metrics"),
+                        }
+
+                    tool_result_content.append({
+                        "type": "tool_result",
+                        "tool_use_id": tc.id,
+                        "content": raw_output,
                     })
-                    continue
-                else:
-                    # Fallback to simulated result if model failed schema after retry
-                    yield {
-                        "type": "error",
-                        "message": "Model failed to produce valid InvestigationResult schema after retry.",
-                    }
-                    return
 
-            # Execute tool calls
-            tool_result_content = []
-            for tc in tool_calls:
-                if self.tool_call_count >= self.max_tool_calls:
-                    yield {
-                        "type": "tool_cap_reached",
-                        "count": self.tool_call_count,
-                        "max": self.max_tool_calls,
-                    }
-                    break
+                if tool_result_content:
+                    messages.append({"role": "user", "content": tool_result_content})
 
-                self.tool_call_count += 1
+        # ── Anthropic API error handling — NO silent fallback ──────────────
+        except anthropic.RateLimitError:
+            log.error("Anthropic rate limit exceeded during investigation of %s", self.scenario_id)
+            yield {
+                "type": "error",
+                "code": "rate_limit",
+                "message": (
+                    "The AI service is temporarily rate-limited. "
+                    "Please wait a moment and try again."
+                ),
+            }
+        except anthropic.AuthenticationError:
+            log.error("Anthropic authentication error — check ANTHROPIC_API_KEY")
+            yield {
+                "type": "error",
+                "code": "authentication_error",
+                "message": (
+                    "The AI service rejected the API key. "
+                    "Contact your administrator to check the API credentials."
+                ),
+            }
+        except anthropic.PermissionDeniedError as exc:
+            log.error("Anthropic permission denied (possible credit exhaustion): %s", exc)
+            yield {
+                "type": "error",
+                "code": "credits_exhausted",
+                "message": (
+                    "The AI service is unavailable — this may indicate the account "
+                    "has no remaining credits. Contact your administrator."
+                ),
+            }
+        except anthropic.APIConnectionError as exc:
+            log.error("Anthropic connection error: %s", exc)
+            yield {
+                "type": "error",
+                "code": "connection_error",
+                "message": (
+                    "Could not reach the AI service. Check your network connection "
+                    "and try again."
+                ),
+            }
+        except anthropic.APITimeoutError:
+            log.error("Anthropic API timeout during investigation of %s", self.scenario_id)
+            yield {
+                "type": "error",
+                "code": "timeout",
+                "message": (
+                    "The AI service timed out. The investigation took too long to complete. "
+                    "Please try again."
+                ),
+            }
+        except anthropic.APIStatusError as exc:
+            # Catch-all for other HTTP errors (529 overloaded, etc.)
+            log.error("Anthropic API status error %d: %s", exc.status_code, exc.message)
+            if exc.status_code == 529:
                 yield {
-                    "type": "tool_call_start",
-                    "tool_call_index": self.tool_call_count,
-                    "tool_name": tc.name,
-                    "arguments": tc.input,
+                    "type": "error",
+                    "code": "service_overloaded",
+                    "message": (
+                        "The AI service is currently overloaded. Please try again in a few minutes."
+                    ),
                 }
-
-                raw_output = execute_tool(self.scenario_id, tc.name, tc.input)
-
-                # Parse data for UI event
-                parsed_data = None
-                try:
-                    m = re.search(r"<telemetry_data[^>]*>(.*?)</telemetry_data>", raw_output, re.DOTALL)
-                    if m:
-                        content_clean = re.sub(r"<!--.*?-->", "", m.group(1)).strip()
-                        parsed_data = json.loads(content_clean)
-                except Exception:
-                    parsed_data = {"raw": raw_output[:200]}
-
+            else:
                 yield {
-                    "type": "tool_call_result",
-                    "tool_call_index": self.tool_call_count,
-                    "tool_name": tc.name,
-                    "data": parsed_data,
+                    "type": "error",
+                    "code": f"api_error_{exc.status_code}",
+                    "message": (
+                        f"The AI service returned an unexpected error (HTTP {exc.status_code}). "
+                        "Please try again or contact your administrator."
+                    ),
                 }
-
-                if tc.name == "run_in_sandbox" and isinstance(parsed_data, dict):
-                    yield {
-                        "type": "rehearsal_result",
-                        "fix_id": parsed_data.get("fix_id"),
-                        "risk_level": parsed_data.get("risk_level"),
-                        "blast_radius": parsed_data.get("blast_radius"),
-                        "before_metrics": parsed_data.get("before_metrics"),
-                        "after_metrics": parsed_data.get("after_metrics"),
-                    }
-
-                tool_result_content.append({
-                    "type": "tool_result",
-                    "tool_use_id": tc.id,
-                    "content": raw_output,
-                })
-
-            if tool_result_content:
-                messages.append({"role": "user", "content": tool_result_content})

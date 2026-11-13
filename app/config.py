@@ -39,6 +39,14 @@ class Settings(BaseSettings):
         default="claude-sonnet-5-5",
         description="Anthropic model name",
     )
+    AGENT_MODE: str = Field(
+        default="live",
+        description=(
+            "Agent execution mode. 'live' uses the real Anthropic API (default). "
+            "'mock' uses deterministic simulation — only allowed when explicitly set "
+            "to AGENT_MODE=mock. No silent fallback."
+        ),
+    )
     PRODUCTION: bool = Field(
         default=False,
         description="Enable production hardening (HTTPS-only cookies, HSTS, no /docs)",
@@ -85,6 +93,15 @@ class Settings(BaseSettings):
             raise ValueError("CLAUDE_MODEL must start with 'claude-'")
         return v
 
+    @field_validator("AGENT_MODE")
+    @classmethod
+    def _agent_mode_allowlist(cls, v: str) -> str:
+        allowed = {"live", "mock"}
+        v_lower = v.strip().lower()
+        if v_lower not in allowed:
+            raise ValueError(f"AGENT_MODE must be one of {allowed!r}, got {v!r}")
+        return v_lower
+
     def print_startup_status(self) -> None:
         """
         Print which env vars are SET or MISSING — NEVER print their values.
@@ -93,6 +110,7 @@ class Settings(BaseSettings):
         required = ["ANTHROPIC_API_KEY", "SECRET_KEY"]
         optional = [
             "CLAUDE_MODEL",
+            "AGENT_MODE",
             "PRODUCTION",
             "DATABASE_URL",
             "CORS_ORIGIN",

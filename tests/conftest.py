@@ -17,6 +17,9 @@ os.environ.setdefault("ANTHROPIC_API_KEY", "test-key-not-real-sk-ant-placeholder
 os.environ.setdefault("SECRET_KEY", "test-secret-key-must-be-at-least-32-chars-long")
 os.environ.setdefault("DATABASE_URL", f"sqlite:///{_tmp_db.name}")
 os.environ.setdefault("PRODUCTION", "false")
+# Tests always run in mock mode — no live API calls during the test suite.
+# To run against the live API, set AGENT_MODE=live with a real ANTHROPIC_API_KEY.
+os.environ.setdefault("AGENT_MODE", "mock")
 
 
 @pytest.fixture(scope="session")

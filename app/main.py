@@ -48,6 +48,11 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
     init_db()
     log.info("Database initialized.")
     log.info("OnCall Rehearsal Agent started. PRODUCTION=%s", settings.PRODUCTION)
+    log.info(
+        "Agent mode: %s (model: %s)",
+        settings.AGENT_MODE.upper(),
+        settings.CLAUDE_MODEL if settings.AGENT_MODE == "live" else "N/A (mock)",
+    )
     yield
     # Shutdown
     log.info("OnCall Rehearsal Agent shutting down.")

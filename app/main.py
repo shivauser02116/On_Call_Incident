@@ -26,7 +26,8 @@ from slowapi.util import get_remote_address
 from starlette.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.database import init_db
+from app.database import init_db, create_user, get_user_by_username
+from app.auth import hash_password
 from app.middleware import RequestSizeLimitMiddleware, SecurityHeadersMiddleware
 from app.routes.admin_routes import router as admin_router
 from app.routes.api_routes import router as api_router
@@ -38,6 +39,65 @@ logging.basicConfig(level=settings.LOG_LEVEL)
 log = logging.getLogger(__name__)
 
 from app.limiter import limiter
+
+# ── Environment-driven admin seeding ───────────────────────────────────────
+
+import os as _os
+import re as _re
+
+_USERNAME_RE = _re.compile(r"^[a-zA-Z0-9_\-\.]{1,64}$")
+
+
+def _seed_admin_from_env() -> None:
+    """
+    If ADMIN_USERNAME and ADMIN_PASSWORD env vars are set, create or update
+    the admin user at startup.
+
+    This is the ONLY way to provision users on Cloud Run where SQLite is
+    ephemeral and ``create_admin.py`` cannot run interactively.
+
+    Security notes:
+    - Both variables MUST be injected via Secret Manager; never bake them
+      into the Docker image or Dockerfile.
+    - The password is hashed with Argon2 before storage; the plaintext value
+      is immediately discarded after hashing.
+    - This function never logs the password value.
+    """
+    username = _os.environ.get("ADMIN_USERNAME", "").strip()
+    password = _os.environ.get("ADMIN_PASSWORD", "").strip()
+
+    if not username or not password:
+        return  # Not configured — skip silently
+
+    if not _USERNAME_RE.match(username):
+        log.error(
+            "ADMIN_USERNAME '%s' contains invalid characters — admin seeding skipped.",
+            username,
+        )
+        return
+
+    if len(password) < 12:
+        log.error("ADMIN_PASSWORD is too short (< 12 chars) — admin seeding skipped.")
+        return
+
+    existing = get_user_by_username(username)
+    password_hash = hash_password(password)
+    # Discard plaintext immediately
+    del password
+
+    if existing:
+        from app.database import get_db
+        with get_db() as conn:
+            conn.execute(
+                "UPDATE users SET password_hash = ?, role = 'admin', "
+                "failed_login_count = 0, locked_until = NULL WHERE username = ?",
+                (password_hash, username),
+            )
+        log.info("Admin user '%s' updated from ADMIN_USERNAME/ADMIN_PASSWORD env vars.", username)
+    else:
+        create_user(username=username, password_hash=password_hash, role="admin")
+        log.info("Admin user '%s' created from ADMIN_USERNAME/ADMIN_PASSWORD env vars.", username)
+
 
 # ── Lifespan ───────────────────────────────────────────────────────────────
 
@@ -53,6 +113,15 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
         settings.AGENT_MODE.upper(),
         settings.CLAUDE_MODEL if settings.AGENT_MODE == "live" else "N/A (mock)",
     )
+
+    # ── Environment-driven admin seeding (Cloud Run / ephemeral SQLite) ──
+    # On Cloud Run, SQLite is ephemeral (reset on each new container instance).
+    # Set ADMIN_USERNAME + ADMIN_PASSWORD env vars to automatically create the
+    # admin user at startup without interactive prompts.
+    # WARNING: These env vars must come from Secret Manager, never from the
+    # Dockerfile or image. The admin account resets on every redeploy.
+    _seed_admin_from_env()
+
     yield
     # Shutdown
     log.info("OnCall Rehearsal Agent shutting down.")

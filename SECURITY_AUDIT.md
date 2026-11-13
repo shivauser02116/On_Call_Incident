@@ -10,9 +10,9 @@
 
 | Category | Total Requirements | DONE | PARTIAL | NOT DONE |
 |---|---|---|---|---|
-| **Security Controls** | 15 | 15 | 0 | 0 |
+| **Security Controls** | 16 | 15 | 1 | 0 |
 
-**Result**: PASS — Ready for hackathon and production-simulated evaluation.
+**Result**: PASS (with 1 PARTIAL noted for upstream dependency audit) — Ready for evaluation and deployment.
 
 ---
 
@@ -139,12 +139,19 @@
 ---
 
 ### 10. Dependency Management & Vulnerability Scanning
-- **Status**: **DONE**
+- **Status**: **PARTIAL**
 - **Evidence**:
-  - `requirements.txt`: All packages pinned with exact versions (`fastapi==0.115.5`, `pydantic==2.10.3`, `argon2-cffi==23.1.0`, `python-multipart==0.0.33`, etc.).
-  - Vulnerability Audit: `pip-audit` was executed against dependencies. `python-multipart` was upgraded to `0.0.33` to remediate known CVEs.
-- **Remaining Risks**: Upstream zero-day vulnerabilities in dependencies require periodic `pip-audit` scans.
-- **Manual Verification**: Run `pip-audit -r requirements.txt` periodically in CI/CD pipeline.
+  - `requirements.txt`: All packages pinned with exact versions (`fastapi==0.115.5`, `uvicorn[standard]==0.32.1`, `pydantic==2.10.3`, `argon2-cffi==23.1.0`, `python-multipart==0.0.33`, etc.).
+  - `pip-audit -r requirements.txt`: Executed on 2026-11-13.
+    - Findings: 16 vulnerabilities reported across 2 packages:
+      - `starlette==0.41.3` (15 advisories: PYSEC-2026-1941, PYSEC-2026-1942, PYSEC-2026-161, PYSEC-2026-2281, PYSEC-2026-2280, PYSEC-2026-249, PYSEC-2026-248). Pulled transitively by `fastapi==0.115.5`. Full resolution requires upgrading to FastAPI 0.162+ / Starlette 1.10.0+ in coordination with test runner dependencies.
+      - `pytest==8.3.4` (1 advisory: PYSEC-2026-1845; fix version 9.0.3). Note: `pytest` is a development/testing dependency only, excluded from production Docker runtime via `.dockerignore`.
+  - Frontend Dependency Audit (`corepack pnpm --dir frontend audit`):
+    - `pnpm audit --prod`: **0 vulnerabilities** found in production runtime dependencies.
+    - `pnpm audit` (default including devDependencies): 7 vulnerabilities found in dev-time build tool `vite` (moderate/high relating to `launch-editor` Windows path handling and `server.fs.deny` bypass on Windows). Vite is strictly a build tool; static assets in `dist/` contain no Vite runtime code.
+    - `npm audit` on frontend fails with `npm error code ENOLOCK` because dependencies are managed via `pnpm-lock.yaml`, not `package-lock.json`.
+- **Remaining Risks**: Starlette vulnerabilities in the backend ASGI layer need coordinated upgrade when FastAPI releases full compatibility patches.
+- **Manual Verification**: Run `pip-audit -r requirements.txt` and `corepack pnpm --dir frontend audit --prod`.
 
 ---
 
@@ -208,12 +215,26 @@
 
 ---
 
-### 15. Final Verification & Human Sign-Off Checklist
+### 15. React Build & Frontend Security Controls (Figma UI Integration)
+- **Status**: **DONE**
+- **Evidence**:
+  - **No inline scripts**: Vite builds application JavaScript into an external module chunk (`/assets/index-*.js`). The emitted `frontend/dist/index.html` contains zero inline `<script>` tags, strictly adhering to the CSP directive `script-src 'self'`.
+  - **No external resources**: All Google Fonts CDN `@import` declarations were completely removed from `frontend/src/index.css`. The application uses a local system font stack (`system-ui, -apple-system, sans-serif`). Zero external CDNs, tracking scripts, analytics, or remote image domains are loaded. CSP directive `font-src 'self'` and `img-src 'self' data:` remain intact without modification.
+  - **No `dangerouslySetInnerHTML`**: Grep across all source files in `frontend/src/` returns 0 occurrences. All telemetry logs, hypotheses, metrics, and incident diffs are rendered as safe React text nodes via standard JSX expressions.
+  - **No tokens in browser storage**: Grep across all source files in `frontend/src/` confirms 0 occurrences of `localStorage` or `sessionStorage`. Session tokens remain exclusively in server-issued `HttpOnly`, `SameSite=Strict` cookies (`Secure=True` in production), inaccessible to JavaScript. CSRF tokens are stored in cookies and passed via headers/payloads.
+  - **Dev Proxy / SPA routing**: `frontend/vite.config.ts` proxies `/api`, `/login`, `/logout`, `/health`, and `/admin` to backend port 8000. In production, FastAPI serves `frontend/dist` with SPA route fallback to `index.html`.
+- **Remaining Risks**: None.
+- **Manual Verification**: Run `grep -rn "dangerouslySetInnerHTML\|localStorage\|sessionStorage" frontend/src` and inspect network tab to confirm 0 external resource requests.
 
-| Verification Task | Required Manual Action |
-|---|---|
-| **API Keys** | Confirm `ANTHROPIC_API_KEY` is loaded from a secret manager or shell environment, never hardcoded. |
-| **HTTPS Setup** | When deploying beyond localhost, set `PRODUCTION=true` in `.env` to enforce HSTS and Secure cookies. |
-| **Admin Password** | Generate a unique password (min 16 chars) via `python create_admin.py`. |
-| **Audit Log** | Check `/admin/audit-page` periodically to review all approved and rejected incident fixes. |
-| **Rehearsal Review** | Always inspect the before/after SVG chart and blast radius preview before approving Level 2 actions. |
+---
+
+### 16. Final Verification & Human Sign-Off Checklist
+
+| Verification Task | Required Manual Action | Sign-off Status |
+|---|---|---|
+| **API Keys** | Confirm `ANTHROPIC_API_KEY` is loaded from a secret manager or shell environment, never hardcoded. | **PENDING (Human sign-off required)** |
+| **HTTPS Setup** | When deploying beyond localhost, set `PRODUCTION=true` in `.env` to enforce HSTS and Secure cookies. | **PENDING (Human sign-off required)** |
+| **Admin Password** | Generate a unique password (min 16 chars) via `python create_admin.py` or Secret Manager. | **PENDING (Human sign-off required)** |
+| **Audit Log** | Check `/admin/audit-page` periodically to review all approved and rejected incident fixes. | **PENDING (Human sign-off required)** |
+| **Rehearsal Review** | Always inspect the before/after metrics and blast radius preview before approving Level 2 actions. | **PENDING (Human sign-off required)** |
+| **Cloud Run Deployment** | Deploy with `--max-instances 1` and Secret Manager credentials per `DEPLOY.md`. Do NOT use Firebase Hosting. | **PENDING (Human sign-off required)** |

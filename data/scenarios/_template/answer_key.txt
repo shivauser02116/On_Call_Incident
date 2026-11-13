@@ -1,0 +1,10 @@
+root_cause: Detailed technical description of what actually caused the incident.
+
+evidence: Specific evidence found in logs.csv, metrics.csv, and deploys.csv that proves the root cause.
+
+red_herrings:
+  1. First misleading clue (e.g. routine background warning or unrelated deploy) and why it is not the cause.
+  2. Second misleading clue and why it is not the cause.
+
+correct_fix: fix_your_action_id (risk_level 1) — Description of the correct remediation and why it resolves the incident safely.
+alternative: fix_suboptimal_action_id (risk_level 2) — Alternative action considered and why it carries higher risk or is ineffective.

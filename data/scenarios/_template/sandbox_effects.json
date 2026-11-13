@@ -1,0 +1,19 @@
+{
+  "fix_your_action_id": {
+    "risk_level": 1,
+    "blast_radius": "Brief description of the impact radius (e.g. 10s elevated latency during restart).",
+    "rationale": "Why this remediation resolves the incident based on sandbox rehearsal.",
+    "before_metrics": {
+      "p95_latency_ms": 8400,
+      "error_rate_pct": 24.5,
+      "memory_mb": 512,
+      "db_connections": 88
+    },
+    "after_metrics": {
+      "p95_latency_ms": 210,
+      "error_rate_pct": 0.05,
+      "memory_mb": 480,
+      "db_connections": 12
+    }
+  }
+}

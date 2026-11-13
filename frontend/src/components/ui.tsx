@@ -32,7 +32,7 @@ export function Chip({ tone = 'mute', icon, children }: { tone?: 'bad' | 'accent
   )
 }
 
-export function PrimaryButton({ children, disabled, icon = 'arrow', className = '', onClick }: { children: React.ReactNode; disabled?: boolean; icon?: string | null; className?: string; onClick?: () => void }) {
+export function PrimaryButton({ children, disabled, icon = 'arrow', className = '', onClick, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode; icon?: string | null }) {
   return (
     <button
       disabled={disabled}
@@ -40,6 +40,7 @@ export function PrimaryButton({ children, disabled, icon = 'arrow', className = 
       className={`flex h-12 min-w-11 items-center justify-center gap-2 rounded-xl px-6 text-[15px] font-semibold transition-colors ${
         disabled ? 'cursor-not-allowed bg-panel-2 text-faint' : 'bg-accent text-bg shadow-[0_10px_28px_-10px_rgba(139,147,255,0.85)] hover:bg-accent-strong'
       } ${className}`}
+      {...rest}
     >
       {children}
       {icon && <Icon name={icon} size={17} stroke={2.2} />}
@@ -47,8 +48,8 @@ export function PrimaryButton({ children, disabled, icon = 'arrow', className = 
   )
 }
 
-export function GhostButton({ children, className = '', onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
-  return <button onClick={onClick} className={`flex h-12 min-w-11 items-center justify-center rounded-xl border border-line px-6 text-[15px] font-medium text-ink hover:bg-panel-2 ${className}`}>{children}</button>
+export function GhostButton({ children, className = '', onClick, disabled, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) {
+  return <button onClick={onClick} disabled={disabled} className={`flex h-12 min-w-11 items-center justify-center rounded-xl border border-line px-6 text-[15px] font-medium text-ink hover:bg-panel-2 disabled:opacity-50 disabled:cursor-not-allowed ${className}`} {...rest}>{children}</button>
 }
 
 export function DemoTag() {

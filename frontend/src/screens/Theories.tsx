@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ActionBar, Shell } from '../components/Frame'
 import { Icon } from '../components/Icon'
 import { useNav } from '../nav'
-import { Card, Chip, PageHeader, PrimaryButton } from '../components/ui'
+import { Card, Chip, GhostButton, PageHeader, PrimaryButton } from '../components/ui'
 import { AgentTraceDrawer } from '../components/AgentTraceDrawer'
 
 interface TheoryItem {
@@ -173,6 +173,9 @@ export function Theories({ initialOpen = [0] }: { initialOpen?: number[] }) {
       current={2}
       footer={
         <ActionBar note="Next, review the fix the agent proposes for the most likely cause.">
+          <GhostButton onClick={() => go('stopwatch')} data-testid="compare-manual-btn">
+            Compare with manual
+          </GhostButton>
           <PrimaryButton onClick={() => go('fix')}>Review fix</PrimaryButton>
         </ActionBar>
       }

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
-export type Route = 'login' | 'alert' | 'investigate' | 'theories' | 'fix' | 'decision' | 'success' | 'profile'
+export type Route = 'login' | 'alert' | 'investigate' | 'theories' | 'fix' | 'decision' | 'success' | 'profile' | 'stopwatch'
 export type Variant = 'default' | 'risky' | 'error' | 'menu'
 
 // Step index in the sidebar -> screen
@@ -12,7 +12,7 @@ export const backOf: Partial<Record<Route, Route>> = {
   decision: 'fix',
 }
 
-const routes: Route[] = ['login', 'alert', 'investigate', 'theories', 'fix', 'decision', 'success', 'profile']
+const routes: Route[] = ['login', 'alert', 'investigate', 'theories', 'fix', 'decision', 'success', 'profile', 'stopwatch']
 
 function parse(hash: string): { route: Route; variant: Variant } {
   const key = hash.replace('#', '')

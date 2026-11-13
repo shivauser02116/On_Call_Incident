@@ -5,6 +5,7 @@ import { Fix } from './screens/Fix'
 import { Investigate } from './screens/Investigate'
 import { Login } from './screens/Login'
 import { Profile } from './screens/Profile'
+import { Stopwatch } from './screens/Stopwatch'
 import { Success } from './screens/Success'
 import { Theories } from './screens/Theories'
 
@@ -17,6 +18,7 @@ const screens = {
   decision: Decision,
   success: Success,
   profile: Profile,
+  stopwatch: Stopwatch,
 }
 
 function Screen() {

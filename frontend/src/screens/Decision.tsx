@@ -16,11 +16,173 @@ function Row({ icon, label, children }: { icon: string; label: string; children:
   )
 }
 
+/** Shown when top confidence < 50% or no confident fix can be proposed. */
+function EscalationView({
+  hypotheses,
+  investigationId,
+}: {
+  hypotheses: Array<{ rank: number; cause: string; confidence: number }>
+  investigationId: number | null
+}) {
+  const [submitting, setSubmitting] = useState(false)
+  const [escalated, setEscalated] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const handleEscalate = async () => {
+    if (!investigationId) {
+      setEscalated(true)
+      return
+    }
+    setSubmitting(true)
+    setErrorMsg(null)
+    try {
+      const csrfToken = getCsrfToken()
+      const res = await fetch(`/api/investigations/${investigationId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          investigation_id: investigationId,
+          action: 'escalate',
+          csrf_token: csrfToken,
+        }),
+        credentials: 'same-origin',
+      })
+      if (res.ok) {
+        setEscalated(true)
+      } else {
+        const data = await res.json().catch(() => null)
+        setErrorMsg(data?.detail || 'Failed to escalate.')
+      }
+    } catch {
+      setErrorMsg('Network error while escalating.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const conflictingReasons = hypotheses
+    .slice(0, 3)
+    .map((h) => `${Math.round(h.confidence * 100)}% — ${h.cause}`)
+
+  const suggestedChecks = [
+    'Run tcpdump / traceroute on affected edge nodes and inspect packet loss.',
+    'Check DNS resolver logs for intermittent NXDOMAIN or timeout patterns.',
+    'Pull CPU and memory graphs for all worker nodes over the incident window.',
+  ]
+
+  if (escalated) {
+    return (
+      <Shell current={4}>
+        <PageHeader
+          eyebrow="Investigation complete"
+          title="Escalated to a human"
+          sub="An audit entry has been recorded. A Tier-3 engineer will take over."
+        />
+        <Card className="p-6">
+          <div className="flex items-center gap-3 text-ok">
+            <Icon name="check" size={22} />
+            <span className="text-[16px] font-semibold">Escalation logged</span>
+          </div>
+          <p className="mt-3 text-[14px] text-mute">
+            This investigation has been marked for human review. No automated fix was applied.
+          </p>
+        </Card>
+      </Shell>
+    )
+  }
+
+  return (
+    <Shell
+      current={4}
+      footer={
+        <ActionBar
+          note={
+            <span className="text-mute text-[13.5px]">
+              No automated fix is safe to apply. Escalate for human review.
+            </span>
+          }
+        >
+          <PrimaryButton
+            icon="alert"
+            onClick={handleEscalate}
+            disabled={submitting}
+            data-testid="escalate-button"
+          >
+            {submitting ? 'Escalating…' : 'Escalate to a human'}
+          </PrimaryButton>
+        </ActionBar>
+      }
+    >
+      <PageHeader
+        eyebrow="Checkout API is responding slowly"
+        title="No safe fix found"
+        sub="The agent found conflicting evidence across hypotheses. Confidence is too low to apply an automated fix safely."
+      />
+
+      {errorMsg && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-2xl border border-bad/30 bg-bad/10 p-4 text-[14px] text-bad"
+        >
+          <Icon name="alert" size={18} className="mt-0.5 shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      <Card className="border-warn/30 bg-warn/5 p-5">
+        <div className="flex items-center gap-2.5 text-warn">
+          <Icon name="alert" size={17} />
+          <Label>Conflicting evidence — hypotheses could not be ranked with confidence</Label>
+        </div>
+        <ul className="mt-3 space-y-1.5">
+          {conflictingReasons.map((r) => (
+            <li key={r} className="flex items-start gap-2 text-[13.5px] text-mute">
+              <span className="mt-0.5 shrink-0 text-warn">•</span>
+              <span>{r}</span>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card className="p-5">
+        <div className="flex items-center gap-2.5 text-accent">
+          <Icon name="list" size={17} />
+          <Label>Suggested read-only checks for the on-call engineer</Label>
+        </div>
+        <ol className="mt-3 space-y-2">
+          {suggestedChecks.map((c, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-[13.5px]">
+              <span className="mt-0.5 shrink-0 font-semibold text-accent">{i + 1}.</span>
+              <span className="text-mute">{c}</span>
+            </li>
+          ))}
+        </ol>
+      </Card>
+    </Shell>
+  )
+}
+
 export function Decision() {
   const { go, variant, investigationResult, rehearsalResult, investigationId } = useNav()
 
   const proposedFix = investigationResult?.proposed_fix
   const topHypothesis = investigationResult?.hypotheses?.[0]
+  const allHypotheses = investigationResult?.hypotheses ?? []
+
+  // Phase 10: detect escalation path
+  const topConfidence = topHypothesis
+    ? (topHypothesis.confidence > 1 ? topHypothesis.confidence / 100 : topHypothesis.confidence)
+    : null
+  const needsEscalation = topConfidence !== null && topConfidence < 0.5
+
+  if (needsEscalation) {
+    return (
+      <EscalationView
+        hypotheses={allHypotheses}
+        investigationId={investigationId}
+      />
+    )
+  }
 
   const numericRisk = proposedFix?.risk_level ?? (variant === 'risky' ? 2 : 1)
   const riskKey: Risk = numericRisk === 0 ? 'safe' : numericRisk === 2 ? 'risky' : 'reversible'

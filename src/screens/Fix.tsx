@@ -11,7 +11,7 @@ const results = [
 ]
 
 export function Fix() {
-  const { go } = useNav()
+  const { go, variant } = useNav()
   return (
     <Shell
       current={3}
@@ -73,7 +73,7 @@ export function Fix() {
 
         <div className="mt-6">
           <div className="mb-3 text-[13px] text-mute">Response time during the practice run</div>
-          <PracticeChart />
+          <PracticeChart variant={variant} />
         </div>
       </Card>
     </Shell>

@@ -108,7 +108,7 @@ function Theory({ t, rank, open, onToggle }: { t: (typeof theories)[number]; ran
 
 export function Theories({ initialOpen = [0] }: { initialOpen?: number[] }) {
   const [openSet, setOpen] = useState<number[]>(initialOpen)
-  const { go } = useNav()
+  const { go, rejected, setRejected } = useNav()
   const toggle = (i: number) => setOpen((o) => (o.includes(i) ? o.filter((x) => x !== i) : [...o, i]))
   return (
     <Shell
@@ -120,6 +120,18 @@ export function Theories({ initialOpen = [0] }: { initialOpen?: number[] }) {
       }
     >
       <PageHeader eyebrow="Checkout API is responding slowly" title="Three likely causes" sub="Ranked by how well the evidence fits. Open any cause to see why." />
+      {rejected && (
+        <div role="status" className="flex items-start gap-3 rounded-2xl border border-bad/35 bg-bad/10 px-5 py-4">
+          <Icon name="shield" size={18} className="mt-0.5 shrink-0 text-bad" />
+          <div className="min-w-0">
+            <div className="text-[14px] font-semibold text-bad">Fix rejected</div>
+            <div className="mt-0.5 text-[13px] text-mute">You rejected the proposed fix. Review the theories below and select a different approach, or escalate.</div>
+          </div>
+          <button type="button" onClick={() => setRejected(false)} aria-label="Dismiss" className="ml-auto shrink-0 rounded-lg p-1 text-faint transition-colors hover:text-ink">
+            <Icon name="x" size={16} />
+          </button>
+        </div>
+      )}
       <div className="flex flex-col gap-3 @laptop:gap-4">
         {theories.map((t, i) => (
           <Theory key={t.title} t={t} rank={i + 1} open={openSet.includes(i)} onToggle={() => toggle(i)} />

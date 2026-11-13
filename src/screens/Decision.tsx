@@ -20,7 +20,7 @@ const stats = [
 ]
 
 export function Decision() {
-  const { go, variant } = useNav()
+  const { go, variant, setRejected } = useNav()
   const risk = variant === 'risky' ? 'risky' : 'reversible'
   const risky = risk === 'risky'
   const [typed, setTyped] = useState('')
@@ -40,8 +40,8 @@ export function Decision() {
             </>
           }
         >
-          <GhostButton onClick={() => go('theories')}>Reject</GhostButton>
-          <PrimaryButton disabled={blocked} icon="check" onClick={() => go('success')}>Approve fix</PrimaryButton>
+          <GhostButton onClick={() => { setRejected(true); go('theories') }}>Reject</GhostButton>
+          <PrimaryButton disabled={blocked} icon="check" onClick={() => { setRejected(false); go('success') }}>Approve fix</PrimaryButton>
         </ActionBar>
       }
     >

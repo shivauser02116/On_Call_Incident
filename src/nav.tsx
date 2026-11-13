@@ -17,12 +17,13 @@ function parse(hash: string): { route: Route; variant: Variant } {
   return { route: (routes as string[]).includes(key) ? (key as Route) : 'login', variant: 'default' }
 }
 
-type Nav = { route: Route; variant: Variant; go: (r: Route) => void; diagnosed: boolean; setDiagnosed: (v: boolean) => void; cameFrom: Route; signOut: () => void }
+type Nav = { route: Route; variant: Variant; go: (r: Route) => void; diagnosed: boolean; setDiagnosed: (v: boolean) => void; cameFrom: Route; signOut: () => void; rejected: boolean; setRejected: (v: boolean) => void }
 const Ctx = createContext<Nav | null>(null)
 
 export function NavProvider({ children }: { children: React.ReactNode }) {
   const [loc, setLoc] = useState(() => parse(window.location.hash))
   const [diagnosed, setDiagnosed] = useState(false)
+  const [rejected, setRejected] = useState(false)
   const [cameFrom, setCameFrom] = useState<Route>('alert')
   const routeRef = useRef(loc.route)
   routeRef.current = loc.route
@@ -44,7 +45,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     window.location.hash = 'login'
   }, [])
 
-  return <Ctx.Provider value={{ ...loc, go, diagnosed, setDiagnosed, cameFrom, signOut }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ ...loc, go, diagnosed, setDiagnosed, cameFrom, signOut, rejected, setRejected }}>{children}</Ctx.Provider>
 }
 
 export function useNav() {

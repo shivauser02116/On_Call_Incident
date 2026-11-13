@@ -10,13 +10,13 @@ const now = [
 ]
 
 export function Success() {
-  const { go, setDiagnosed } = useNav()
+  const { go, setDiagnosed, setRejected } = useNav()
   return (
     <Shell
       current={5}
       footer={
         <ActionBar note="Everything the agent did is saved in the incident log.">
-          <PrimaryButton icon={null} onClick={() => { setDiagnosed(false); go('alert') }}>Back to start</PrimaryButton>
+          <PrimaryButton icon={null} onClick={() => { setDiagnosed(false); setRejected(false); go('alert') }}>Back to start</PrimaryButton>
         </ActionBar>
       }
     >

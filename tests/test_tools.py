@@ -24,6 +24,8 @@ class TestToolDefinitions:
     def test_all_five_tools_registered(self):
         names = {t["name"] for t in TOOL_DEFINITIONS}
         expected = {
+            "formulate_plan",
+            "replan",
             "get_recent_deploys",
             "query_logs",
             "get_metrics",

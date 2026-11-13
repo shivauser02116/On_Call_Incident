@@ -31,14 +31,18 @@ SYSTEM_PROMPT = """You are the OnCall Rehearsal Agent, an AI production incident
 Your job is to investigate production alerts, identify the root cause, evaluate evidence, rehearse proposed fixes in an isolated sandbox, and recommend a safe remediation for human approval.
 
 CORE PROTOCOL:
-1. INVESTIGATE: Use your tools to check recent deploys, query logs, inspect metrics, and search past incidents.
+1. INVESTIGATION PLANNING:
+   - You MUST formulate an ordered sequence of checks before running tools by calling the `formulate_plan` tool. Detail the checks to run and the technical reason for each.
+   - If findings contradict your initial theories or reveal unexpected telemetry, you MUST call the `replan` tool explaining what findings changed your plan and providing the revised sequence of checks.
+2. INVESTIGATE: Use your tools to check recent deploys, query logs, inspect metrics, and search past incidents according to your plan.
 2. REHEARSE: Always call `run_in_sandbox(fix_id)` to rehearse potential fixes before recommending them. Inspect the before/after metrics.
 3. COURT OF HYPOTHESES: Synthesize your findings into EXACTLY THREE ranked hypotheses.
    - Rank 1: Most probable root cause with high confidence.
-   - Rank 2 & 3: Alternative explanations (including investigating red herrings and proving why they are less likely).
+   - Rank 2 & 3: Alternative explanations (including investigating red herrings and showing why they are less likely).
    - Each hypothesis MUST have `evidence_for` and `evidence_against`.
    - Every evidence item MUST cite the specific `tool_call` and `source_row` or row index it originated from.
 4. PROPOSED FIX: Select the best fix rehearsed in the sandbox. Cite its `fix_id`, `risk_level` (0-2), `blast_radius`, and `rationale`.
+   - In all explanations and rationale, say "the practice run showed" (NEVER use the word "proved").
 5. OUTPUT FORMAT: Conclude your final turn with a valid JSON block enclosed in ```json ... ``` that conforms strictly to the InvestigationResult schema:
 {
   "hypotheses": [
@@ -159,17 +163,19 @@ class AgentRunner:
             "agent_mode": "mock" if self.is_mock else "live",
         }
 
-        # Emit initial structured plan (Phase 9)
-        yield {
-            "type": "plan",
-            "steps": self._get_initial_plan(),
-        }
-
         if self.is_mock:
+            # In mock mode, emit simulated initial plan
+            yield {
+                "type": "plan",
+                "source": "model",
+                "is_mock": True,
+                "steps": self._get_initial_plan(),
+            }
             async for event in self._run_simulated():
                 yield event
             return
 
+        # In live mode, plan must come from the model itself via formulate_plan tool call
         async for event in self._run_live_anthropic():
             yield event
 
@@ -213,6 +219,8 @@ class AgentRunner:
             if tool_name == "search_past_incidents" and self.scenario_id == "ambiguous_escalate":
                 yield {
                     "type": "replan",
+                    "source": "model",
+                    "is_mock": True,
                     "reason": "Telemetry reveals multiple conflicting error signatures (TCP resets vs DNS timeouts) with zero recent deploys. Pivoting to assess human escalation and read-only diagnostics.",
                     "steps": [
                         {"step": 1, "tool": "get_metrics", "description": "Inspect service latency, error rate, and saturation metrics.", "status": "completed"},
@@ -225,6 +233,8 @@ class AgentRunner:
             elif tool_name == "search_past_incidents" and self.scenario_id == "config_change_flag":
                 yield {
                     "type": "replan",
+                    "source": "model",
+                    "is_mock": True,
                     "reason": "No code releases found in deploy log; error logs revealed dynamic config key db_pool_timeout_ms updated to 50ms. Pivoting to verify dynamic configuration rollback.",
                     "steps": [
                         {"step": 1, "tool": "get_metrics", "description": "Inspect service latency and connection drops.", "status": "completed"},
@@ -291,6 +301,7 @@ class AgentRunner:
                 "arguments": args,
                 "summary": summary,
                 "duration_ms": call_duration_ms,
+                "is_mock": True,
                 "data": parsed_data,
             }
 
@@ -315,6 +326,7 @@ class AgentRunner:
             "tool_calls_used": self.tool_call_count,
             "elapsed_ms": total_elapsed_ms,
             "tokens_used": tokens_used,
+            "is_mock": True,
             "result": result.model_dump(),
         }
 
@@ -395,8 +407,8 @@ class AgentRunner:
                     fix_id="fix_add_index",
                     action="Re-add the missing index on orders.status column: CREATE INDEX CONCURRENTLY idx_orders_status ON orders(status)",
                     risk_level=1,
-                    blast_radius="orders table locked for ~2 minutes during index creation; queries may queue briefly",
-                    rationale="Rehearsal in sandbox proved p95 latency dropped from 9200ms to 185ms and active connections normalized to 12 without rolling back dashboard feature.",
+                    blast_radius="CREATE INDEX CONCURRENTLY runs without blocking table reads or writes; incurs moderate CPU and I/O overhead on the database for ~2-3 minutes during the dual-scan index build.",
+                    rationale="The practice run showed p95 latency dropped from 9200ms to 185ms and active connections normalized to 12 without rolling back dashboard feature.",
                 ),
             )
         elif self.scenario_id == "connection_pool_leak":
@@ -532,7 +544,7 @@ class AgentRunner:
                     action="Deploy hotfix replacing unbounded request_body_log list with a bounded deque or structured log handler.",
                     risk_level=1,
                     blast_radius="Rolling restart with ~15s elevated latency; body logging paused until fix verified.",
-                    rationale="Rehearsal in sandbox proved memory stabilized at 518MB baseline with zero OOM events.",
+                    rationale="The practice run showed memory stabilized at 518MB baseline with zero OOM events.",
                 ),
             )
         elif self.scenario_id == "third_party_outage":
@@ -673,7 +685,7 @@ class AgentRunner:
                     action="Revert dynamic configuration key db_pool_timeout_ms back to 5000ms via config store.",
                     risk_level=0,
                     blast_radius="Zero downtime dynamic configuration propagation without server restart.",
-                    rationale="Rehearsal in sandbox proved error rate dropped from 89.2% to 0.02% and latency normalized to 45ms.",
+                    rationale="The practice run showed error rate dropped from 89.2% to 0.02% and latency normalized to 45ms.",
                 ),
             )
         else:  # ambiguous_escalate
@@ -808,6 +820,7 @@ class AgentRunner:
                                 "tool_calls_used": self.tool_call_count,
                                 "elapsed_ms": total_elapsed_ms,
                                 "tokens_used": total_tokens or 1250,
+                                "is_mock": False,
                                 "result": validated.model_dump(),
                             }
                             return
@@ -841,6 +854,63 @@ class AgentRunner:
                 # Execute tool calls
                 tool_result_content = []
                 for tc in tool_calls:
+                    if tc.name == "formulate_plan":
+                        steps_raw = tc.input.get("steps", [])
+                        v_steps = []
+                        for s_idx, s in enumerate(steps_raw, 1):
+                            v_steps.append(
+                                PlanStep(
+                                    step=s_idx,
+                                    tool=str(s.get("tool", s.get("id", f"step_{s_idx}"))),
+                                    description=str(s.get("description", s.get("reason", s.get("label", "Investigation check")))),
+                                    id=str(s.get("id", f"step_{s_idx}")),
+                                    label=str(s.get("label", s.get("tool", f"Step {s_idx}"))),
+                                    reason=str(s.get("reason", "")),
+                                    status="pending",
+                                )
+                            )
+                        yield {
+                            "type": "plan",
+                            "source": "model",
+                            "is_mock": False,
+                            "steps": [s.model_dump() for s in v_steps],
+                        }
+                        tool_result_content.append({
+                            "type": "tool_result",
+                            "tool_use_id": tc.id,
+                            "content": json.dumps({"status": "plan_recorded", "step_count": len(v_steps)}),
+                        })
+                        continue
+
+                    if tc.name == "replan":
+                        replan_reason = str(tc.input.get("reason", "Investigation replanned based on findings."))
+                        steps_raw = tc.input.get("steps", [])
+                        v_steps = []
+                        for s_idx, s in enumerate(steps_raw, 1):
+                            v_steps.append(
+                                PlanStep(
+                                    step=s_idx,
+                                    tool=str(s.get("tool", s.get("id", f"step_{s_idx}"))),
+                                    description=str(s.get("description", s.get("reason", s.get("label", "Investigation check")))),
+                                    id=str(s.get("id", f"step_{s_idx}")),
+                                    label=str(s.get("label", s.get("tool", f"Step {s_idx}"))),
+                                    reason=str(s.get("reason", "")),
+                                    status="pending",
+                                )
+                            )
+                        yield {
+                            "type": "replan",
+                            "source": "model",
+                            "is_mock": False,
+                            "reason": replan_reason,
+                            "steps": [s.model_dump() for s in v_steps],
+                        }
+                        tool_result_content.append({
+                            "type": "tool_result",
+                            "tool_use_id": tc.id,
+                            "content": json.dumps({"status": "replan_recorded", "reason": replan_reason}),
+                        })
+                        continue
                     if self.tool_call_count >= self.max_tool_calls:
                         yield {
                             "type": "tool_cap_reached",
@@ -890,6 +960,7 @@ class AgentRunner:
                         "arguments": tc.input,
                         "summary": summary,
                         "duration_ms": tc_duration_ms,
+                        "is_mock": False,
                         "data": parsed_data,
                     }
 

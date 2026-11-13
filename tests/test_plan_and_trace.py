@@ -102,3 +102,73 @@ async def test_trace_duration_summary_and_totals():
     assert "tokens_used" in completed
     assert isinstance(completed["tokens_used"], int)
     assert completed["tokens_used"] > 0
+
+from app.tools import TOOL_DEFINITIONS, execute_tool
+from app.agent import SYSTEM_PROMPT
+import json
+
+def test_plan_and_replan_tools_in_tool_definitions():
+    """Verify formulate_plan and replan exist in TOOL_DEFINITIONS with valid schemas."""
+    tools_by_name = {t["name"]: t for t in TOOL_DEFINITIONS}
+    assert "formulate_plan" in tools_by_name
+    assert "replan" in tools_by_name
+
+    fp = tools_by_name["formulate_plan"]
+    assert "steps" in fp["input_schema"]["properties"]
+    assert fp["input_schema"]["required"] == ["steps"]
+
+    rp = tools_by_name["replan"]
+    assert "reason" in rp["input_schema"]["properties"]
+    assert "steps" in rp["input_schema"]["properties"]
+    assert set(rp["input_schema"]["required"]) == {"reason", "steps"}
+
+    # Test execution
+    res1 = execute_tool("bad_deploy_slow_queries", "formulate_plan", {"steps": [{"id": "s1", "label": "test", "reason": "why"}]})
+    assert "plan_recorded" in res1
+
+    res2 = execute_tool("bad_deploy_slow_queries", "replan", {"reason": "pivoting", "steps": []})
+    assert "replan_recorded" in res2
+
+def test_system_prompt_wording_rules():
+    """Verify SYSTEM_PROMPT instructs 'the practice run showed' and never 'proved'."""
+    assert "the practice run showed" in SYSTEM_PROMPT
+    assert "never use the word \"proved\"" in SYSTEM_PROMPT.lower()
+    assert "proving why they are less likely" not in SYSTEM_PROMPT
+
+@pytest.mark.asyncio
+async def test_simulated_events_have_is_mock_flag():
+    """Verify mock mode sets is_mock=True on plan, replan, trace, and completion."""
+    runner = AgentRunner("ambiguous_escalate")
+    events = []
+    async for event in runner.run():
+        events.append(event)
+
+    plan_ev = next(e for e in events if e["type"] == "plan")
+    assert plan_ev.get("is_mock") is True
+    assert plan_ev.get("source") == "model"
+
+    replan_ev = next(e for e in events if e["type"] == "replan")
+    assert replan_ev.get("is_mock") is True
+    assert replan_ev.get("source") == "model"
+
+    tool_results = [e for e in events if e["type"] == "tool_call_result"]
+    for tr in tool_results:
+        assert tr.get("is_mock") is True
+
+    completed = next(e for e in events if e["type"] == "investigation_completed")
+    assert completed.get("is_mock") is True
+
+@pytest.mark.asyncio
+async def test_simulated_rationale_wording_and_no_lock_contradiction():
+    """Verify simulated results say 'the practice run showed' and do not claim orders table locked."""
+    for scenario in ["bad_deploy_slow_queries", "memory_leak", "config_change_flag"]:
+        runner = AgentRunner(scenario)
+        result = runner._generate_simulated_result()
+        assert "proved" not in result.proposed_fix.rationale.lower()
+        assert "the practice run showed" in result.proposed_fix.rationale.lower()
+
+    # Specifically check bad_deploy_slow_queries
+    runner = AgentRunner("bad_deploy_slow_queries")
+    result = runner._generate_simulated_result()
+    assert "orders table locked" not in result.proposed_fix.blast_radius.lower()
+    assert "create index concurrently" in result.proposed_fix.blast_radius.lower()

@@ -133,9 +133,12 @@ class AuditLogQuery(BaseModel):
 class PlanStep(BaseModel):
     model_config = ConfigDict(strict=False)
 
-    step: int = Field(ge=1, le=20)
-    tool: str = Field(max_length=64)
-    description: str = Field(max_length=512)
+    step: int = Field(default=1, ge=1, le=20)
+    tool: str = Field(default="", max_length=64)
+    description: str = Field(default="", max_length=512)
+    id: Optional[str] = Field(default=None, max_length=64)
+    label: Optional[str] = Field(default=None, max_length=128)
+    reason: Optional[str] = Field(default=None, max_length=512)
     status: Literal["pending", "running", "completed", "skipped"] = "pending"
 
 
@@ -143,6 +146,8 @@ class PlanEvent(BaseModel):
     model_config = ConfigDict(strict=False)
 
     type: Literal["plan"] = "plan"
+    source: Literal["model", "standard"] = "model"
+    is_mock: Optional[bool] = None
     steps: list[PlanStep] = Field(min_length=1)
 
 
@@ -150,6 +155,8 @@ class ReplanEvent(BaseModel):
     model_config = ConfigDict(strict=False)
 
     type: Literal["replan"] = "replan"
+    source: Literal["model", "standard"] = "model"
+    is_mock: Optional[bool] = None
     reason: str = Field(max_length=1024)
     steps: list[PlanStep] = Field(min_length=1)
 

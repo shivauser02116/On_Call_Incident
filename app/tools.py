@@ -30,6 +30,53 @@ from app.data_loader import (
 
 TOOL_DEFINITIONS = [
     {
+        "name": "formulate_plan",
+        "description": "Formulate your ordered sequence of investigation checks before executing them. Specify the steps to perform and the technical rationale for each.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "steps": {
+                    "type": "array",
+                    "description": "Ordered list of planned investigation checks",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string", "description": "Unique step identifier (e.g. check_metrics, check_deploys)"},
+                            "label": {"type": "string", "description": "Short human-readable label for this check"},
+                            "reason": {"type": "string", "description": "Technical rationale explaining why this check is necessary"},
+                        },
+                        "required": ["id", "label", "reason"],
+                    },
+                },
+            },
+            "required": ["steps"],
+        },
+    },
+    {
+        "name": "replan",
+        "description": "Update and replan your investigation when tool findings, unexpected errors, or contradictory evidence require changing direction.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "reason": {"type": "string", "description": "Explanation of what findings invalidated the original plan and prompted this replan"},
+                "steps": {
+                    "type": "array",
+                    "description": "Updated ordered list of remaining investigation checks",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string"},
+                            "label": {"type": "string"},
+                            "reason": {"type": "string"},
+                        },
+                        "required": ["id", "label", "reason"],
+                    },
+                },
+            },
+            "required": ["reason", "steps"],
+        },
+    },
+    {
         "name": "get_recent_deploys",
         "description": "Fetch recent software deployments and schema migrations for the service. Returns commit message, author, files changed, and diff summary.",
         "input_schema": {
@@ -186,6 +233,15 @@ def execute_tool(scenario_id: str, tool_name: str, arguments: dict[str, Any]) ->
         query = str(arguments.get("query", ""))[:256]
         incidents = search_past_incidents(query)
         return format_tool_result(tool_name, {"incidents": incidents, "count": len(incidents)})
+
+    elif tool_name == "formulate_plan":
+        steps = arguments.get("steps", [])
+        return format_tool_result(tool_name, {"status": "plan_recorded", "step_count": len(steps)})
+
+    elif tool_name == "replan":
+        reason = arguments.get("reason", "")
+        steps = arguments.get("steps", [])
+        return format_tool_result(tool_name, {"status": "replan_recorded", "reason": reason, "step_count": len(steps)})
 
     elif tool_name == "run_in_sandbox":
         fix_id = str(arguments.get("fix_id", "")).strip()[:64]

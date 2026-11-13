@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Icon } from './Icon'
 
 export function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -59,27 +60,91 @@ export function DemoTag() {
 }
 
 const levels = [
-  { key: 'safe', label: 'Safe', on: 'bg-ok/15 text-ok ring-ok/40' },
-  { key: 'reversible', label: 'Reversible', on: 'bg-accent/15 text-accent ring-accent/40' },
-  { key: 'risky', label: 'Risky', on: 'bg-bad/15 text-bad ring-bad/40' },
+  {
+    key: 'safe',
+    label: 'Safe',
+    on: 'bg-ok/15 text-ok ring-ok/40',
+    explanation: 'Read-only or no effect on live systems.',
+  },
+  {
+    key: 'reversible',
+    label: 'Reversible',
+    on: 'bg-accent/15 text-accent ring-accent/40',
+    explanation: 'Changes something, but it can be undone.',
+  },
+  {
+    key: 'risky',
+    label: 'Risky',
+    on: 'bg-bad/15 text-bad ring-bad/40',
+    explanation: 'Hard or impossible to undo. Needs a typed confirmation.',
+  },
 ] as const
 
 export type Risk = (typeof levels)[number]['key']
 
-export function RiskScale({ level }: { level: Risk }) {
+export function RiskScale({ level, assignedReason }: { level: Risk; assignedReason?: string }) {
+  const [expanded, setExpanded] = useState<Risk | null>(null)
+
+  const toggle = (key: Risk) => {
+    setExpanded((prev) => (prev === key ? null : key))
+  }
+
+  const expandedLevel = levels.find((l) => l.key === expanded)
+
   return (
-    <div role="img" aria-label={`Risk level: ${level}`} className="grid grid-cols-3 gap-1.5 rounded-xl border border-line bg-bg p-1.5">
-      {levels.map((l, i) => {
-        const active = l.key === level
-        return (
-          <div key={l.key} className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg px-1 text-[13px] font-medium ring-1 ${active ? l.on : 'text-faint ring-transparent'}`}>
-            <span className={`grid size-4 place-items-center rounded-full text-[10px] font-semibold`}>
-              {active ? <Icon name="check" size={13} stroke={2.6} /> : i + 1}
-            </span>
-            {l.label}
-          </div>
-        )
-      })}
+    <div>
+      {/* Three keyboard-accessible buttons — tapping shows explanation, never changes risk level */}
+      <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-line bg-bg p-1.5">
+        {levels.map((l, i) => {
+          const active = l.key === level
+          const isExpanded = expanded === l.key
+          return (
+            <button
+              key={l.key}
+              type="button"
+              id={`risk-btn-${l.key}`}
+              aria-expanded={isExpanded}
+              aria-controls={`risk-panel-${l.key}`}
+              onClick={() => toggle(l.key)}
+              className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg px-1 text-[13px] font-medium ring-1 transition-colors ${
+                active ? l.on : 'text-faint ring-transparent hover:text-mute hover:ring-line/50'
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`}
+            >
+              <span className="grid size-4 place-items-center rounded-full text-[10px] font-semibold">
+                {active ? <Icon name="check" size={13} stroke={2.6} /> : i + 1}
+              </span>
+              <span className="flex flex-col items-start leading-tight">
+                <span>{l.label}</span>
+                {active && (
+                  <span className="text-[10px] font-normal opacity-80">Assigned</span>
+                )}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Explanation panel (read-only context) */}
+      {expandedLevel && (
+        <div
+          id={`risk-panel-${expandedLevel.key}`}
+          role="region"
+          aria-labelledby={`risk-btn-${expandedLevel.key}`}
+          className="mt-2 rounded-xl border border-line bg-panel p-3.5 text-[13px] leading-relaxed text-mute"
+        >
+          <span className="font-medium text-ink">{expandedLevel.label}: </span>
+          {expandedLevel.explanation}
+          {expandedLevel.key === level && assignedReason && (
+            <p className="mt-2 text-[12px] text-faint italic">{assignedReason}</p>
+          )}
+        </div>
+      )}
+
+      {/* Read-only caption */}
+      <p className="mt-2 text-[11.5px] text-faint">
+        Set by the agent. Enforced when you approve.
+      </p>
     </div>
   )
 }
+

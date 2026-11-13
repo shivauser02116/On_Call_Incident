@@ -16,6 +16,11 @@ export function Fix() {
   const riskKey: Risk = numericRisk === 0 ? 'safe' : numericRisk === 2 ? 'risky' : 'reversible'
   const riskDesc = riskKey === 'risky' ? 'High blast radius' : riskKey === 'reversible' ? 'Can be undone' : 'Low risk'
 
+  // Section D: colon-split fix action
+  const colonIdx = fixAction.indexOf(':')
+  const actionHeadline = colonIdx > 0 ? fixAction.slice(0, colonIdx).trim() : null
+  const actionDetail = colonIdx > 0 ? fixAction.slice(colonIdx + 1).trim() : null
+
   // Extract rehearsal metrics if available
   const beforeLatency = rehearsalResult?.before_metrics?.latency_p95_ms ?? '2,340'
   const afterLatency = rehearsalResult?.after_metrics?.latency_p95_ms ?? '190'
@@ -52,9 +57,23 @@ export function Fix() {
               <Icon name="wrench" size={17} />
               <Label>Proposed fix</Label>
             </div>
-            <h2 className="mt-3 text-[20px] font-semibold leading-snug @laptop:text-[22px]">
-              {fixAction}
-            </h2>
+            {actionHeadline ? (
+              <>
+                <h2 className="mt-3 text-[20px] font-semibold leading-snug @laptop:text-[22px]">
+                  {actionHeadline}
+                </h2>
+                <div className="mt-2">
+                  <div className="mb-1 text-[11.5px] font-medium uppercase tracking-wider text-mute">Exact change</div>
+                  <pre className="overflow-x-auto rounded-lg border border-line bg-bg px-3 py-2.5 font-mono text-[13px] text-ink/90 whitespace-pre-wrap break-words">
+                    {actionDetail}
+                  </pre>
+                </div>
+              </>
+            ) : (
+              <h2 className="mt-3 text-[20px] font-semibold leading-snug @laptop:text-[22px]">
+                {fixAction}
+              </h2>
+            )}
             <p className="mt-3 text-[14.5px] leading-relaxed text-mute">
               {rationale}
             </p>
@@ -65,7 +84,7 @@ export function Fix() {
                 <Label>Risk</Label>
                 <span className="text-[12.5px] text-mute">{riskDesc}</span>
               </div>
-              <RiskScale level={riskKey} />
+              <RiskScale level={riskKey} assignedReason={blastRadius} />
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-line bg-bg px-4 py-3">
               <Icon name="target" size={18} className="shrink-0 text-accent" />

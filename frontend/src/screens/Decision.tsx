@@ -35,6 +35,11 @@ export function Decision() {
 
   const blocked = risky && typed.trim() !== expectedPhrase
   const fix = proposedFix?.action || (risky ? 'Restart the orders database' : 'Re-create index on orders(customer_id)')
+
+  // Section D: colon-split fix action
+  const fixColonIdx = fix.indexOf(':')
+  const fixHeadline = fixColonIdx > 0 ? fix.slice(0, fixColonIdx).trim() : null
+  const fixDetail = fixColonIdx > 0 ? fix.slice(fixColonIdx + 1).trim() : null
   const impact = proposedFix?.blast_radius || rehearsalResult?.blast_radius || (risky ? 'All checkouts, for about 2 minutes' : 'Checkout API only')
   const causeTitle = topHypothesis?.cause || 'Missing database index after a recent change'
   const causeConf = topHypothesis
@@ -141,7 +146,19 @@ export function Decision() {
         </Row>
 
         <Row icon="wrench" label="Fix">
-          <p className="break-words text-[16px] font-medium leading-snug">{fix}</p>
+          {fixHeadline ? (
+            <>
+              <p className="break-words text-[16px] font-medium leading-snug">{fixHeadline}</p>
+              <div className="mt-2">
+                <div className="mb-1 text-[11.5px] font-medium uppercase tracking-wider text-mute">Exact change</div>
+                <pre className="overflow-x-auto rounded-lg border border-line bg-bg px-3 py-2 font-mono text-[12.5px] text-ink/90 whitespace-pre-wrap break-words">
+                  {fixDetail}
+                </pre>
+              </div>
+            </>
+          ) : (
+            <p className="break-words text-[16px] font-medium leading-snug">{fix}</p>
+          )}
           <p className="mt-2 text-[13.5px] text-mute">Impact: {impact}</p>
         </Row>
 
@@ -160,12 +177,7 @@ export function Decision() {
         </Row>
 
         <Row icon="shield" label="Risk">
-          <RiskScale level={riskKey} />
-          <p className="mt-3 text-[13.5px] text-mute">
-            {risky
-              ? 'This change is hard to undo. Take a moment before you approve.'
-              : 'You can undo this in one click if anything looks wrong.'}
-          </p>
+          <RiskScale level={riskKey} assignedReason={impact} />
         </Row>
       </div>
 

@@ -323,7 +323,29 @@ async def approve_investigation_fix(
 
     client_ip = request.client.host if request.client else "unknown"
 
-    # 7. Rejection flow
+    # 7. Escalation flow (confidence < 50% or no confident fix found)
+    if body.action == "escalate":
+        db.update_investigation(investigation_id, status="rejected")
+        db.log_audit(
+            action="fix_escalated",
+            user_id=user.user_id,
+            target_id=str(investigation_id),
+            details={
+                "scenario_id": scenario_id,
+                "fix_id": fix_id,
+                "risk_level": risk_level,
+                "reason": "Operator escalated to human: confidence below threshold or no safe automated fix.",
+            },
+            ip_address=client_ip,
+        )
+        return JSONResponse(content={
+            "status": "escalated",
+            "investigation_id": investigation_id,
+            "fix_id": fix_id,
+            "message": "Investigation escalated to a human operator. Audit entry recorded.",
+        })
+
+    # 8. Rejection flow
     if body.action == "reject":
         db.update_investigation(investigation_id, status="rejected")
         db.log_audit(

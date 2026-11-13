@@ -75,7 +75,7 @@ class ApproveFixRequest(BaseModel):
     model_config = ConfigDict(strict=True)
 
     investigation_id: int = Field(ge=1)
-    action: Literal["approve", "reject"]
+    action: Literal["approve", "reject", "escalate"]
     # Required for Level 2: must be "CONFIRM <fix_id>"
     confirmation_text: Optional[str] = Field(None, max_length=256)
     csrf_token: str = Field(min_length=32, max_length=128)

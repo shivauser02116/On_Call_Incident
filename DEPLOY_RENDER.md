@@ -1,105 +1,154 @@
-# Deploying On-Call Incident Rehearsal to Render (Free Static Site)
+# OnCall Rehearsal Agent — Render Deployment
 
-This repository contains the standalone **On-Call Incident Rehearsal** web application built with **React 19**, **Tailwind CSS v4**, and **Vite**. All scenario flows (incident alerting, investigation timer simulations, theories court, fix options, and decisions) run entirely client-side.
-
-Deploying as a **Render Static Site** is the recommended hosting choice:
-- **100% Free**: No charges and no credit card required.
-- **Never Sleeps**: Unlike Render's free Web Services (which spin down after 15 minutes of inactivity), Static Sites are served directly from Render's global CDN and are **instantly available 24/7**.
-- **Automatic HTTPS**: SSL certificates are provisioned automatically.
-- **Zero Secrets**: Because the app runs client-side simulation logic, no API keys or backend environment secrets are required.
+> Deploy as a Docker web service. No local Docker required; Render builds the
+> image from your repository using the existing `Dockerfile`.
 
 ---
 
-## 1. Prepare Git Repository
+## Honest Limitations (read first)
 
-This folder is not yet connected to a remote Git repository. To deploy to Render, push this project to GitHub or GitLab:
+### What resets on every redeploy
 
-```bash
-cd "/Users/shivaprasad/Downloads/On-Call Incident Rehearsal"
+| Data | Fate |
+|---|---|
+| SQLite database (`oncall.db`) | **Wiped** — ephemeral disk, starts empty |
+| All user accounts | **Lost** — admin re-created automatically from env vars (see below) |
+| All sessions | **Lost** — everyone is logged out |
+| Audit log | **Lost** |
 
-# Initialize git repository
-git init -b main
+### What happens when the free service sleeps
 
-# Stage all files (AGENTS.md and CLAUDE.md have already been removed)
-git add .
+Render's free plan spins down any service that has received no HTTP traffic for
+**15 minutes**. When the container is terminated:
 
-# Create initial commit
-git commit -m "feat: initial commit for on-call incident rehearsal frontend"
+- The SQLite database is **also wiped** (it lives on the container's ephemeral filesystem).
+- The admin account is **re-created on the next cold start** from `ADMIN_USERNAME`
+  and `ADMIN_PASSWORD` env vars — no manual action needed.
+- The first request after sleep takes **30–60 seconds** while Render starts a new
+  container. Subsequent requests are fast.
 
-# Create a new repository on GitHub (using GitHub CLI) or create one via github.com
-gh repo create on-call-incident-rehearsal --public --source=. --push
+> **Bottom line**: treat this deployment as a stateless demo tool. Data does not
+> persist across sleeps or deploys. If you need persistence, upgrade to a paid
+> Render plan with a persistent disk or add a PostgreSQL database.
+
+---
+
+## Step 1 — Connect your repository
+
+1. Go to [dashboard.render.com](https://dashboard.render.com) → **New** → **Web Service**.
+2. Connect your GitHub/GitLab account and select the `AgentX` repository.
+3. Render will detect `render.yaml` and pre-fill the service settings.
+
+---
+
+## Step 2 — Set secret environment variables in the dashboard
+
+The four variables below have `sync: false` in `render.yaml`, which means Render
+will **not** read their values from the file — you must type them yourself in the
+Render dashboard. This keeps secrets out of your repository.
+
+Go to your service → **Environment** tab, then set:
+
+| Variable | What to put |
+|---|---|
+| `ANTHROPIC_API_KEY` | Your Anthropic API key (`sk-ant-...`) |
+| `SECRET_KEY` | A random string ≥ 32 chars. Generate one: `openssl rand -base64 32` |
+| `ADMIN_USERNAME` | The username you will log in with (e.g. `admin`) |
+| `ADMIN_PASSWORD` | A strong password, ≥ 12 chars with uppercase, digit, and symbol |
+
+> **`CORS_ORIGIN`** also has `sync: false` but you need the service URL to fill
+> it in — see Step 3.
+
+**Non-secret variables are pre-set in `render.yaml`** and do not need dashboard input:
+`PRODUCTION=true`, `AGENT_MODE=live`, `CLAUDE_MODEL=claude-sonnet-4-5`,
+`DATABASE_URL=sqlite:///./oncall.db`, `LOG_LEVEL=INFO`.
+
+---
+
+## Step 3 — Deploy, then fix CORS_ORIGIN (two-step)
+
+This is a chicken-and-egg problem: `CORS_ORIGIN` must be your service URL, but
+the URL is only known after the first deploy.
+
+**First deploy**: click **Deploy**. Render builds the Docker image from source
+(3–5 min). The service starts with `CORS_ORIGIN` unset, which defaults to
+`http://localhost:8000` and will cause CORS errors if you try to log in.
+
+**After the first deploy**:
+1. Copy the `.onrender.com` URL from the top of your service page.
+2. Go to **Environment** → find `CORS_ORIGIN` → click **Edit** → paste the URL
+   (e.g. `https://oncall-agent.onrender.com`).
+3. Click **Save Changes** — Render automatically triggers a second deploy
+   (~30 seconds). After it completes, the app is fully functional.
+
+---
+
+## Step 4 — Verify the health endpoint
+
+```
+https://<your-service>.onrender.com/health
 ```
 
-*(If you don't use `gh` CLI, create an empty repository on [github.com](https://github.com/new), then run `git remote add origin <your-repo-url>` and `git push -u origin main`.)*
+Expected response:
+
+```json
+{"status": "ok"}
+```
 
 ---
 
-## 2. Deploy on Render
+## Post-Deploy Verification Checklist
 
-### Method A: Automatic Deployment using Blueprint (`render.yaml`)
+Work through these in a real browser once the second deploy (Step 3) completes:
 
-1. Log in to [dashboard.render.com](https://dashboard.render.com/).
-2. Click **New +** in the top navigation bar and select **Blueprint**.
-3. Connect your GitHub/GitLab account and select your `on-call-incident-rehearsal` repository.
-4. Render will detect `render.yaml` automatically:
-   - **Service Type**: Static Site (`runtime: static`)
-   - **Build Command**: `corepack enable && pnpm install --frozen-lockfile && pnpm run build`
-   - **Publish Directory**: `./dist`
-   - **Node Version**: `22`
-   - **SPA Rewrite Rule**: `/*` → `/index.html`
-5. Click **Apply**.
-6. Render will build the site and provide your live URL (e.g. `https://on-call-incident-rehearsal.onrender.com`).
-
----
-
-### Method B: Manual Dashboard Setup (Without Blueprint)
-
-If you prefer setting it up manually without using `render.yaml`:
-
-1. In the Render Dashboard, click **New +** → **Static Site**.
-2. Connect your repository.
-3. Configure the settings:
-   - **Name**: `on-call-incident-rehearsal` (or your choice)
-   - **Branch**: `main`
-   - **Root Directory**: *(leave blank)*
-   - **Build Command**: `corepack enable && pnpm install --frozen-lockfile && pnpm run build`
-   - **Publish Directory**: `dist`
-4. Expand **Advanced**:
-   - Add Environment Variable:
-     - Key: `NODE_VERSION`
-     - Value: `22`
-5. Click **Create Static Site**.
-6. After the initial build finishes, go to **Redirects/Rewrites** in the left sidebar:
-   - Click **Add Rule**
-   - **Type**: `Rewrite`
-   - **Source**: `/*`
-   - **Destination**: `/index.html`
-   - Click **Save Changes** *(this ensures client-side routes like `/alert` or `/profile` work on direct refresh)*.
+| # | Action | Expected result |
+|---|---|---|
+| 1 | Open your Render URL | Login page loads, no console errors |
+| 2 | Enter a wrong password | Red "Invalid credentials" alert appears |
+| 3 | Log in with `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Alert screen loads with "Start investigation" |
+| 4 | Select any scenario → Start investigation | SSE stream opens; four tool checks appear one by one; screen auto-advances to "likely causes" |
+| 5 | Advance through Theories → Fix → Decision | Each screen loads; practice run shows before/after metrics |
+| 6 | Approve a Level 1 fix | "Fix approved and applied" success screen |
+| 7 | Open user menu → View profile | Username and role shown |
+| 8 | Sign out | Redirected to login; back-button does not expose protected screen |
+| 9 | Check Render **Logs** tab | Startup line: `Admin user 'admin' created from ADMIN_USERNAME/ADMIN_PASSWORD env vars.` |
 
 ---
 
-## 3. Post-Deployment Verification Checklist
+## Switching to mock mode (no Anthropic API spend)
 
-Once Render shows **"Live"**, open your assigned `.onrender.com` URL:
-
-- [ ] **Initial Load**: The app loads immediately into the **Login** screen (`#login`).
-- [ ] **Sign In**: Click **"Sign in as on-call engineer"** → navigates to the **Alert** screen (`#alert`).
-- [ ] **Scenario Selection**: Click on the incident alert card (e.g., *Slow order queries & connection spikes*) → transitions to **Investigate** (`#investigate`).
-- [ ] **Live Simulation**: Watch the 3-second investigation progress timer complete and auto-advance to **Theories** (`#theories`).
-- [ ] **Theories & Fix**: Select the top-ranked theory (*Missing index on orders.customer_id*) → click **"Choose this diagnosis"** → inspect the **Fix** screen (`#fix`).
-- [ ] **Safe Dry-Run & Decision**: Run the practice dry-run → click **"Proceed to decision"** (`#decision`) → approve or reject the remediation.
-- [ ] **Profile & User Menu**: Click your avatar in the sidebar/header → navigate to **Profile** (`#profile`) and verify back navigation works.
-- [ ] **Sign Out**: Click **Sign out** → returns cleanly to the **Login** screen.
-- [ ] **Mobile Responsiveness**: Resize the browser down to mobile width (375px) → confirm bottom navigation and responsive layout adapt smoothly.
+In the Render dashboard → **Environment** → change `AGENT_MODE` from `live` to `mock`.
+Save and redeploy. The investigation stream runs deterministically against the
+scenario data files with no API calls. Change back to `live` when done.
 
 ---
 
-## 4. Teardown / Deletion
+## Teardown
 
-When you are finished testing and want to tear down the hosted app:
+1. Render dashboard → your service → **Settings** → scroll to the bottom →
+   **Delete Service** → type the service name to confirm.
 
-1. In the Render Dashboard, select the **on-call-incident-rehearsal** static site.
-2. Click **Settings** in the left navigation menu.
-3. Scroll down to the bottom **Danger Zone**.
-4. Click **Delete Static Site** and type the service name to confirm.
-5. The site and all deployed assets are immediately removed.
+2. That's all Render needs. No other cloud resources are created.
+
+> If you also want to remove the GitHub/GitLab connection, go to your Render
+> account **Settings** → **Connected Accounts** → revoke access.
+
+---
+
+## FAQ
+
+**Why does the app bind to `$PORT` and not `8080`?**
+The `Dockerfile` CMD hardcodes `--port 8080`, but Render injects a different port
+via the `PORT` environment variable. The `dockerCommand` in `render.yaml` overrides
+the Dockerfile CMD with `--port $PORT` so the server always binds to the port
+Render expects. Without this override, Render's health checks would fail and the
+service would never become healthy.
+
+**Can I use a custom domain?**
+Yes — Render dashboard → **Settings** → **Custom Domains**. Free plan supports
+custom domains with auto-provisioned TLS.
+
+**Why no persistent disk?**
+Render's persistent disk requires a paid plan. For a training tool used in short
+sessions, ephemeral SQLite is acceptable. If you upgrade, add a persistent disk
+mounted at `/data` and change `DATABASE_URL` to `sqlite:////data/oncall.db`.

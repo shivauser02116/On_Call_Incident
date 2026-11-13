@@ -1,0 +1,6 @@
+{
+  "id": "memory_leak",
+  "title": "High memory usage and OOM crash loop",
+  "service_name": "Inventory API",
+  "severity": "SEV 1"
+}

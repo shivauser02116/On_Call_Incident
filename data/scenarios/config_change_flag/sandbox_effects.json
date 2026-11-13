@@ -1,0 +1,24 @@
+{
+  "fix_revert_config_flag": {
+    "description": "Revert dynamic configuration flag db_pool_timeout_ms from 50ms back to 5000ms",
+    "risk_level": 0,
+    "blast_radius": "Zero downtime dynamic configuration propagation via etcd/Consul",
+    "after_metrics": {
+      "p95_latency_ms": 45,
+      "error_rate_pct": 0.02,
+      "memory_mb": 382,
+      "db_connections": 18
+    }
+  },
+  "fix_restart_node_cluster": {
+    "description": "Restart all PM2 / Node.js worker cluster processes",
+    "risk_level": 1,
+    "blast_radius": "Brief service restart (~10s); does not fix root cause as bad config value is reloaded on startup",
+    "after_metrics": {
+      "p95_latency_ms": 940,
+      "error_rate_pct": 86.4,
+      "memory_mb": 378,
+      "db_connections": 2
+    }
+  }
+}

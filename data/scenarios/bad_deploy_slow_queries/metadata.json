@@ -1,0 +1,6 @@
+{
+  "id": "bad_deploy_slow_queries",
+  "title": "Checkout API is responding slowly",
+  "service_name": "Checkout API",
+  "severity": "SEV 2"
+}

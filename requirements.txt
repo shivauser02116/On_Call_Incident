@@ -1,0 +1,19 @@
+# OnCall Rehearsal Agent — Pinned Dependencies
+# Install: pip install -r requirements.txt
+# Verify security: pip-audit
+
+fastapi==0.162.5
+starlette==1.10.0
+uvicorn[standard]==0.54.0
+pydantic==2.10.3
+pydantic-settings==2.6.1
+argon2-cffi==23.1.0
+itsdangerous==2.2.0
+python-multipart==0.0.33
+aiofiles==24.1.0
+slowapi==0.1.9
+anthropic==0.40.0
+pytest==9.2.0
+pytest-asyncio==1.5.0
+httpx==0.28.1
+pip-audit==2.10.1

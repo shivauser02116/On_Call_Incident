@@ -1,0 +1,24 @@
+{
+  "fix_connection_recycler": {
+    "description": "Deploy connection recycler sidecar that forcefully reclaims leaked idle connections held >60s",
+    "risk_level": 0,
+    "blast_radius": "No service disruption \u2014 recycler runs alongside app, closes only idle leaked connections",
+    "after_metrics": {
+      "p95_latency_ms": 62,
+      "error_rate_pct": 0.1,
+      "memory_mb": 490,
+      "db_connections": 15
+    }
+  },
+  "fix_restart_app": {
+    "description": "Graceful rolling restart of all app instances to clear leaked connections, then deploy hotfix with finally block",
+    "risk_level": 1,
+    "blast_radius": "~15 seconds of elevated latency during rolling restart; in-flight requests may retry; hotfix requires code review",
+    "after_metrics": {
+      "p95_latency_ms": 58,
+      "error_rate_pct": 0.08,
+      "memory_mb": 485,
+      "db_connections": 8
+    }
+  }
+}

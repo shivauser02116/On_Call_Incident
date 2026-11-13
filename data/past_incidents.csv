@@ -1,0 +1,24 @@
+id,symptoms,root_cause,fix
+INC-001,high latency slow queries database timeout,Missing index on users.email column after migration,CREATE INDEX idx_users_email ON users(email)
+INC-002,connection pool exhausted timeout all connections used,Database connections leaked in background job — missing finally block,Added finally block to background job connection handler
+INC-003,memory usage climbing OOM process killed restart loop,In-memory cache growing unbounded — no TTL set,Set cache TTL to 300s and max size to 10000 entries
+INC-004,high error rate 502 bad gateway upstream timeout,Upstream service deployed broken TLS certificate,"Rolled back upstream deployment, renewed certificate"
+INC-005,slow queries full table scan orders table,deploy removed index on orders.status during schema migration,Re-added index CREATE INDEX idx_orders_status ON orders(status)
+INC-006,connection pool leak connections not released growing,Context manager removed from session middleware in refactor,Restored context manager pattern in database session middleware
+INC-007,memory leak request objects accumulating logging,Debug logging middleware storing full request bodies in module-level list,Removed request body accumulation from logging middleware
+INC-008,high cpu load nginx worker oom killer,Regex catastrophic backtracking in input validation,Replaced with linear-time regex or non-regex validation
+INC-009,database slow checkpoint wal file growing,WAL mode checkpoint not running due to misconfigured auto-checkpoint threshold,Set PRAGMA wal_autocheckpoint=1000 and ran PRAGMA wal_checkpoint(TRUNCATE)
+INC-010,api timeout downstream service 503 retry storm,Missing circuit breaker caused retry storm on downstream failure,Implemented circuit breaker with 30s open window
+INC-011,disk io high 100% iops saturation latency spike,Log rotation not configured — single log file reached 50GB,Configured logrotate with daily rotation and 7-day retention
+INC-012,slow queries missing index n+1 query problem,ORM lazy loading generating N+1 queries on user list endpoint,Added eager loading with joinedload() for related models
+INC-013,connection refused redis unavailable eviction,Redis maxmemory reached and evicted active session keys,"Increased Redis maxmemory-policy to volatile-lru, added alerts"
+INC-014,high memory python gc pause objects not freed,Circular reference between objects preventing garbage collection,Used weakref.WeakValueDictionary for cache to allow GC
+INC-015,deploy rollback slow queries performance regression,New feature added missing composite index,"Added composite index on (tenant_id, created_at) columns"
+INC-016,connection timeout postgresql max_connections hit,pgBouncer pool size increased without increasing PostgreSQL max_connections,Increased max_connections to 500 and pg_hba reload
+INC-017,api errors 500 null pointer exception uncaught,deploy removed null check in user profile handler,"Reverted commit, added null guard with safe default value"
+INC-018,memory growing heap dump large string objects,Response caching caching unbounded large payloads,Added max payload size limit of 1MB to response cache
+INC-019,database deadlock concurrent updates same row lock wait,Two background jobs updating same resource without consistent lock ordering,Sorted lock acquisition order alphabetically by resource ID
+INC-020,cpu spike background job runaway loop,Job scheduler retry backoff not implemented — tight loop on failure,Added exponential backoff with jitter and max retries=5
+INC-021,payment provider timeout 504 gateway retry storm,Upstream payment provider outage with un-jittered retry storm,Enabled circuit breaker and exponential backoff on payment gateway client
+INC-022,connection timeout dynamic config flag pool acquisition,Dynamic config sync altered db_pool_timeout_ms to 50ms,Reverted dynamic configuration flag db_pool_timeout_ms to 5000ms
+INC-023,intermittent network tcp rst dns failure conflicting symptoms,Transient multi-AZ transit gateway packet drops and edge DNS flakiness,Escalated to network infra on-call specialist for packet capture analysis

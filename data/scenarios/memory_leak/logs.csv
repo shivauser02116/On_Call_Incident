@@ -1,0 +1,109 @@
+timestamp,level,message
+2026-11-11T12:55:28Z,INFO,GET /api/feed 200 88ms
+2026-11-11T12:56:01Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T12:56:34Z,INFO,POST /api/events 201 44ms
+2026-11-11T12:57:07Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T12:57:40Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T12:58:13Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T12:58:46Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T12:59:19Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T12:59:52Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:00:25Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:00:28Z,WARNING,GC pause time 250ms — within normal range for heap size (not an error)
+2026-11-11T13:00:58Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:01:31Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:02:04Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:02:37Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:03:10Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:03:43Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:03:58Z,WARNING,GC pause time 310ms — elevated but heap size is 1.8GB
+2026-11-11T13:04:16Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:04:49Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:05:22Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:05:55Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:06:28Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:07:01Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:07:28Z,ERROR,Webhook delivery failed for customer 7291: HTTP 408 timeout — will retry
+2026-11-11T13:07:34Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:08:07Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:08:40Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:09:13Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:09:46Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:10:19Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:10:52Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:10:58Z,WARNING,Webhook retry queue depth: 8 pending for customer 7291
+2026-11-11T13:11:25Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:11:58Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:12:31Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:13:04Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:13:37Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:14:10Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:14:28Z,INFO,"GC completed in 180ms, freed 42MB"
+2026-11-11T13:14:43Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:15:16Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:15:49Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:16:22Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:16:55Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:17:28Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:17:58Z,WARNING,Webhook delivery failed for customer 7291 after 3 retries — giving up
+2026-11-11T13:18:01Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:18:34Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:19:07Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:19:40Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:20:13Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:20:46Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:21:19Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:21:28Z,WARNING,GC pause time 250ms — within normal range for heap size (not an error)
+2026-11-11T13:21:52Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:22:25Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:22:58Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:23:31Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:24:04Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:24:37Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:24:58Z,WARNING,GC pause time 310ms — elevated but heap size is 1.8GB
+2026-11-11T13:25:10Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:25:43Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:26:16Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:26:49Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:27:22Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:27:55Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:28:28Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:28:28Z,ERROR,Webhook delivery failed for customer 7291: HTTP 408 timeout — will retry
+2026-11-11T13:29:01Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:29:34Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:30:07Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:30:28Z,WARNING,Memory usage 68% (1740MB/2560MB) — above normal baseline of 512MB
+2026-11-11T13:30:40Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:31:13Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:31:46Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:31:58Z,WARNING,Webhook retry queue depth: 8 pending for customer 7291
+2026-11-11T13:32:19Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:32:52Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:33:25Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:33:58Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:33:58Z,WARNING,Memory usage 78% (1997MB/2560MB) — request logging middleware accumulating objects
+2026-11-11T13:34:31Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:35:04Z,INFO,GET /api/feed 200 88ms
+2026-11-11T13:35:28Z,INFO,"GC completed in 180ms, freed 42MB"
+2026-11-11T13:35:37Z,DEBUG,Rendering template: dashboard.html
+2026-11-11T13:36:10Z,INFO,POST /api/events 201 44ms
+2026-11-11T13:36:43Z,INFO,Worker processed 12 tasks in queue
+2026-11-11T13:37:16Z,DEBUG,Cache eviction: 42 items removed (LRU)
+2026-11-11T13:37:28Z,ERROR,"Memory usage 89% (2278MB/2560MB) — heap growing, possible leak in request_logger module"
+2026-11-11T13:37:49Z,INFO,GET /api/metrics/summary 200 65ms
+2026-11-11T13:38:22Z,DEBUG,Scheduled cleanup task ran — 0 stale records
+2026-11-11T13:38:55Z,INFO,PUT /api/users/settings 200 38ms
+2026-11-11T13:38:58Z,WARNING,Webhook delivery failed for customer 7291 after 3 retries — giving up
+2026-11-11T13:40:58Z,ERROR,Memory usage 92% (2355MB/2560MB) — request_body_log list has 48000 entries
+2026-11-11T13:42:28Z,WARNING,GC pause time 250ms — within normal range for heap size (not an error)
+2026-11-11T13:44:28Z,CRITICAL,Memory usage 97% (2483MB/2560MB) — OOMKiller likely imminent
+2026-11-11T13:45:58Z,WARNING,GC pause time 310ms — elevated but heap size is 1.8GB
+2026-11-11T13:47:58Z,CRITICAL,OOMKiller activated: process 1234 (gunicorn worker) killed — restarting
+2026-11-11T13:49:28Z,ERROR,Webhook delivery failed for customer 7291: HTTP 408 timeout — will retry
+2026-11-11T13:51:28Z,ERROR,Service restarted after OOM kill — memory back to baseline 512MB
+2026-11-11T13:52:58Z,WARNING,Webhook retry queue depth: 8 pending for customer 7291
+2026-11-11T13:54:58Z,WARNING,"Memory climbing again: 720MB — leak is still present, restart only temporary fix"
+2026-11-11T13:56:28Z,INFO,"GC completed in 180ms, freed 42MB"
+2026-11-11T13:58:28Z,ERROR,Module-level list 'request_body_log' in logging_middleware.py has 12000 entries after restart
+2026-11-11T13:59:58Z,WARNING,Webhook delivery failed for customer 7291 after 3 retries — giving up
+2026-11-11T14:01:58Z,CRITICAL,Memory usage 85% (2176MB/2560MB) — same leak pattern repeating post-restart

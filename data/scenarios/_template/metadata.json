@@ -1,0 +1,6 @@
+{
+  "id": "your_scenario_id",
+  "title": "Clear Incident Summary (e.g. Checkout Service 504 Timeout Spike)",
+  "service_name": "checkout-api",
+  "severity": "CRITICAL"
+}

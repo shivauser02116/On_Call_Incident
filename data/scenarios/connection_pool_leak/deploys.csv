@@ -1,0 +1,31 @@
+time,author,commit_message,files_changed,diff_summary,code_diff
+2026-11-11T09:25:28Z,eve,feat: add product search with filters,"api/products.py, search/indexer.py","Added full-text search, filter by price/category","--- a/api/products.py
++++ b/api/products.py
+@@ -10,1 +10,4 @@
++@router.get('/search')
++def search_products(q: str):
++    return indexer.query(q)"
+2026-11-11T11:05:28Z,frank,fix: correct pagination offset calculation,utils/pagination.py,Fixed off-by-one error in cursor-based pagination,"--- a/utils/pagination.py
++++ b/utils/pagination.py
+@@ -15,2 +15,2 @@
+-offset = page * limit
++offset = max(0, (page - 1) * limit)"
+2026-11-11T11:55:28Z,grace,chore: upgrade SQLAlchemy to 2.0 compatibility,"requirements.txt, database/session.py",Updated session creation for SQLAlchemy 2.0 API,"--- a/requirements.txt
++++ b/requirements.txt
+@@ -5,1 +5,1 @@
+-SQLAlchemy==1.4.48
++SQLAlchemy==2.0.28"
+2026-11-11T13:15:28Z,henry,refactor: extract database session management to middleware,"middleware/db_session.py, api/checkout.py, api/orders.py, api/products.py",Moved db session lifecycle from route handlers to middleware. Removed explicit 'with db.session() as session:' context manager blocks in handlers — session now injected by middleware. NOTE: middleware implementation missing finally block for session.close(),"--- a/middleware/db_session.py
++++ b/middleware/db_session.py
+@@ -0,0 +1,12 @@
++class DBSessionMiddleware:
++    async def __call__(self, request, call_next):
++        request.state.db = SessionLocal()
++        response = await call_next(request)
++        # Bug: missing finally block to close sessionLocal
++        return response"
+2026-11-11T14:15:28Z,grace,docs: add middleware architecture diagram,docs/architecture.md,Added sequence diagram for request lifecycle,"--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -12,0 +12,3 @@
++## Middleware Lifecycle
++DBSessionMiddleware injected before routing"

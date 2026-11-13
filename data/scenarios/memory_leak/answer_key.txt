@@ -1,0 +1,11 @@
+root_cause: The deploy 90 minutes ago (iris, 'feat: add comprehensive request/response logging middleware') introduced a module-level list 'request_body_log = []' in logging_middleware.py that stores full request bodies for every incoming request with no size limit or TTL. The list grows unbounded, consuming all available memory (~2.5GB) in ~45-50 minutes, triggering the OOMKiller. Restarting clears memory temporarily but the leak immediately resumes.
+
+evidence: logs show 'request_body_log list has 48000 entries after restart' and 'Module-level list request_body_log in logging_middleware.py'; deploy diff_summary says 'Stores entries in module-level list ... No max size limit or TTL implemented. Runs on every request.'; metrics show memory climbing from 512MB to 2560MB over 42 minutes in a straight line.
+
+red_herrings:
+  1. GC pause 250-310ms — this is caused BY the growing heap, not causing the leak; GC is trying (and failing) to keep up
+  2. Webhook delivery failures for customer 7291 — completely unrelated, external webhook endpoint timeout
+
+correct_fix: fix_patch_middleware (risk_level 1) — removes the unbounded accumulation
+temporary_mitigation: fix_restart_service (risk_level 0) — clears memory but leak recurs in ~45min
+wrong_fix: fix_increase_memory (risk_level 2) — does not fix leak, just delays OOM by a few hours

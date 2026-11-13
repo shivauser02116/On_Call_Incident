@@ -1,0 +1,16 @@
+time,author,commit_message,files_changed,diff_summary,type,code_diff
+2026-11-09T08:12:00Z,frank,chore: upgrade typescript to 5.7,tsconfig.json;package.json,Compiler configuration update,config,"--- a/package.json
++++ b/package.json
+@@ -10,1 +10,1 @@
+-    ""typescript"": ""^5.6.3"",
++    ""typescript"": ""^5.7.2"","
+2026-11-09T14:30:00Z,charlie,chore: bump linting dependencies,package.json,Updated eslint and prettier rules,config,"--- a/package.json
++++ b/package.json
+@@ -15,1 +15,1 @@
+-    ""eslint"": ""^9.1.0"",
++    ""eslint"": ""^9.2.0"","
+2026-11-10T11:00:00Z,grace,docs: update readme with local dev instructions,README.md,Documentation changes only,config,"--- a/README.md
++++ b/README.md
+@@ -2,0 +2,2 @@
++### Local development
++Run pnpm install && pnpm dev"

@@ -1,0 +1,6 @@
+{
+  "id": "third_party_outage",
+  "title": "Payment gateway timeouts and retry storm",
+  "service_name": "Payment Gateway Service",
+  "severity": "SEV 1"
+}

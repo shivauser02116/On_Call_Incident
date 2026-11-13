@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>OnCall Rehearsal Agent</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Simulated Environment Banner (Mandatory) -->
+  <div class="sim-banner" id="sim-banner" role="banner" aria-label="Environment notice">
+    ⚠️ SIMULATED ENVIRONMENT — All production data and rehearsals are simulated
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="app-header">
+    <div class="header-left">
+      <span class="app-logo" aria-hidden="true">🛡️</span>
+      <div>
+        <h1 class="app-title">OnCall Rehearsal Agent</h1>
+        <p class="app-tagline">The on-call agent that rehearses the fix before you run it.</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <nav class="nav-controls">
+        <span class="user-badge" id="current-user-badge">Signed in</span>
+        <button type="button" class="btn-nav" id="btn-view-audit">Audit Log</button>
+        <button type="button" class="btn-nav btn-danger-nav" id="btn-logout">Sign Out</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="app-container">
+    <!-- Top Bar: Mode Switcher & Alert Trigger -->
+    <section class="control-panel card">
+      <div class="control-panel-header">
+        <div class="mode-toggle" role="group" aria-label="Investigation mode">
+          <button type="button" class="btn-tab active" id="tab-agent-mode">🤖 Agent Mode</button>
+          <button type="button" class="btn-tab" id="tab-manual-mode">⏱️ Manual Stopwatch Mode</button>
+        </div>
+        <div class="stopwatch-display hidden" id="stopwatch-container">
+          <span class="stopwatch-label">Investigation Time:</span>
+          <span class="stopwatch-time" id="stopwatch-timer">00:00.0</span>
+        </div>
+      </div>
+
+      <!-- Alert Trigger Row -->
+      <div class="alert-trigger-row" id="agent-trigger-panel">
+        <div class="form-group-inline">
+          <label for="scenario-select" class="control-label">Select Incident Alert:</label>
+          <select id="scenario-select" class="form-select">
+            <option value="bad_deploy_slow_queries">🔥 Alert: P95 Latency 9200ms SLO Breach (bad_deploy_slow_queries)</option>
+            <option value="connection_pool_leak">⚠️ Alert: DB Connection Pool 100/100 Exhausted (connection_pool_leak)</option>
+            <option value="memory_leak">💥 Alert: OOMKiller Activated, Memory 97% (memory_leak)</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-trigger-alert">
+          <span>🚨 Trigger Production Alert</span>
+        </button>
+      </div>
+
+      <!-- Manual Stopwatch Panel -->
+      <div class="manual-panel hidden" id="manual-trigger-panel">
+        <p class="manual-explainer">
+          In <strong>Manual Mode</strong>, you are the on-call engineer searching raw logs and metrics.
+          Start the timer, inspect the telemetry, identify the root cause, and hit stop!
+        </p>
+        <div class="manual-actions">
+          <button type="button" class="btn btn-warning" id="btn-start-manual">⏱️ Start Manual Incident Response</button>
+          <button type="button" class="btn btn-success hidden" id="btn-stop-manual">✅ I Identified Root Cause & Fix!</button>
+        </div>
+        <div class="manual-viewer hidden" id="manual-viewer-area">
+          <div class="manual-viewer-header">
+            <input type="text" id="manual-log-search" class="form-input search-input" placeholder="Filter logs by keyword...">
+            <span class="log-count" id="manual-log-count">0 logs loaded</span>
+          </div>
+          <div class="log-terminal" id="manual-log-terminal"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notification / Status Banner -->
+    <div class="status-banner hidden" id="status-banner" role="status" aria-live="polite"></div>
+
+    <!-- Live Investigation Stream -->
+    <section class="investigation-stream-section card hidden" id="investigation-section">
+      <div class="card-header">
+        <div class="card-header-title">
+          <span class="spinner-small" id="investigation-spinner" aria-hidden="true"></span>
+          <h2>Live Agent Investigation</h2>
+        </div>
+        <span class="badge" id="tool-count-badge">0 / 12 tool calls</span>
+      </div>
+      <div class="steps-timeline" id="investigation-timeline"></div>
+    </section>
+
+    <!-- Hypothesis Court -->
+    <section class="hypothesis-section card hidden" id="hypothesis-section">
+      <div class="card-header">
+        <h2>⚖️ The Court of Hypotheses</h2>
+        <span class="subtitle">Ranked theories with cross-examined evidence for and against</span>
+      </div>
+      <div class="hypothesis-grid" id="hypothesis-grid"></div>
+    </section>
+
+    <!-- Sandbox Rehearsal Section -->
+    <section class="rehearsal-section card hidden" id="rehearsal-section">
+      <div class="card-header">
+        <h2>🔬 Sandbox Fix Rehearsal</h2>
+        <span class="subtitle">Before & After verification in isolated simulation — zero production impact</span>
+      </div>
+      <div class="rehearsal-body" id="rehearsal-body">
+        <div class="rehearsal-overview" id="rehearsal-overview"></div>
+        <div class="metrics-comparison-grid">
+          <div class="metrics-table-container">
+            <table class="metrics-table" id="metrics-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Before Fix (Live Incident)</th>
+                  <th>After Rehearsal (Sandbox)</th>
+                  <th>Change</th>
+                </tr>
+              </thead>
+              <tbody id="metrics-table-body"></tbody>
+            </table>
+          </div>
+          <div class="chart-container" id="metrics-chart-container">
+            <h4 class="chart-title">Visual Impact Comparison</h4>
+            <div id="metrics-svg-chart"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Approval Bar (Risk Ladder Enforcement) -->
+    <section class="approval-section card hidden" id="approval-section">
+      <div class="approval-card-inner">
+        <div class="approval-info">
+          <div class="risk-badge-row">
+            <span class="risk-pill" id="approval-risk-pill">Level 1: Reversible Fix</span>
+            <span class="blast-pill" id="approval-blast-pill">Blast radius: moderate</span>
+          </div>
+          <h3 id="approval-fix-title">Proposed Fix</h3>
+          <p id="approval-fix-action"></p>
+          <p class="approval-rationale" id="approval-fix-rationale"></p>
+        </div>
+
+        <!-- Level 2 Typed Confirmation Input -->
+        <div class="level2-confirm-box hidden" id="level2-confirm-container">
+          <p class="warning-text">⚠️ <strong>DESTRUCTIVE FIX (Level 2):</strong> To proceed, type the confirmation phrase below exactly:</p>
+          <div class="confirm-input-row">
+            <code class="confirm-phrase" id="confirm-phrase-target">CONFIRM fix_id</code>
+            <input type="text" id="confirm-input" class="form-input" placeholder="Type CONFIRM <fix_id> here" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="approval-actions">
+          <button type="button" class="btn btn-secondary" id="btn-reject-fix">❌ Reject Fix</button>
+          <button type="button" class="btn btn-success" id="btn-approve-fix">🚀 Approve & Apply Fix</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Audit Log Modal (Admin View) -->
+  <div class="modal-backdrop hidden" id="audit-modal" role="dialog" aria-modal="true" aria-labelledby="audit-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="audit-modal-title">🔒 System Audit Log (Admin Only)</h3>
+        <button type="button" class="btn-close" id="btn-close-audit" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="audit-list" id="audit-log-entries"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

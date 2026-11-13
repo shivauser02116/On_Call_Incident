@@ -1,0 +1,12 @@
+time,author,commit_message,files_changed,diff_summary,code_diff
+2026-11-11T16:00:00Z,oliver,refactor: extract route matcher helper,routes/matcher.py,Pure refactor with unit tests passing,"--- a/routes/matcher.py
++++ b/routes/matcher.py
+@@ -5,2 +5,4 @@
++def match_route(path: str) -> bool:
++    return path.startswith('/api/')"
+2026-11-11T18:40:00Z,sophia,chore: update geoip database binary,assets/GeoLite2-City.mmdb,Weekly GeoIP database update,"Binary files a/assets/GeoLite2-City.mmdb and b/assets/GeoLite2-City.mmdb differ"
+2026-11-12T01:10:00Z,liam,docs: update runbook for zone failure,docs/runbooks/az_failure.md,Runbook documentation update,"--- a/docs/runbooks/az_failure.md
++++ b/docs/runbooks/az_failure.md
+@@ -2,0 +2,2 @@
++### Multi-AZ Degradation
++Page tier-3 network specialist"

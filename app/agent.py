@@ -148,8 +148,16 @@ class AgentRunner:
             sandbox_fix = "fix_add_index"
         elif self.scenario_id == "connection_pool_leak":
             sandbox_fix = "fix_restart_app"
-        else:
+        elif self.scenario_id == "memory_leak":
             sandbox_fix = "fix_patch_middleware"
+        elif self.scenario_id == "third_party_outage":
+            sandbox_fix = "fix_enable_circuit_breaker"
+        elif self.scenario_id == "config_change_flag":
+            sandbox_fix = "fix_revert_config_flag"
+        elif self.scenario_id == "ambiguous_escalate":
+            sandbox_fix = "fix_escalate_human_operator"
+        else:
+            sandbox_fix = "fix_add_index"
 
         steps.append(("run_in_sandbox", {"fix_id": sandbox_fix}))
 
@@ -361,7 +369,7 @@ class AgentRunner:
                     rationale="Rehearsal in sandbox showed DB connections drop from 100 back to 8 baseline and p95 latency restored to 58ms.",
                 ),
             )
-        else:  # memory_leak
+        elif self.scenario_id == "memory_leak":
             return InvestigationResult(
                 hypotheses=[
                     Hypothesis(
@@ -427,6 +435,216 @@ class AgentRunner:
                     risk_level=1,
                     blast_radius="Rolling restart with ~15s elevated latency; body logging paused until fix verified.",
                     rationale="Rehearsal in sandbox proved memory stabilized at 518MB baseline with zero OOM events.",
+                ),
+            )
+        elif self.scenario_id == "third_party_outage":
+            return InvestigationResult(
+                hypotheses=[
+                    Hypothesis(
+                        rank=1,
+                        cause="Upstream payment provider PayFlow Global outage with 504 Gateway Timeouts and un-jittered retry storm.",
+                        confidence=0.88,
+                        evidence_for=[
+                            {
+                                "description": "Java stack traces recorded java.net.SocketTimeoutException: Read timed out during PayFlow payment processing.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: java.net.SocketTimeoutException at HttpPaymentClient.execute",
+                            },
+                            {
+                                "description": "Payment latency spiked from 220ms to 28400ms and thread pool saturated with 1420 waiting threads.",
+                                "tool_call": "get_metrics",
+                                "source_row": "metrics.csv: p95_latency_ms spike to 28400",
+                            },
+                        ],
+                        evidence_against=[],
+                    ),
+                    Hypothesis(
+                        rank=2,
+                        cause="Recent checkout promotional banner deploy commit 48f91 introduced regression.",
+                        confidence=0.15,
+                        evidence_for=[
+                            {
+                                "description": "Deploy commit 48f91 occurred 12 minutes prior to incident.",
+                                "tool_call": "get_recent_deploys",
+                                "source_row": "deploys.csv: row 3 (alice)",
+                            }
+                        ],
+                        evidence_against=[
+                            {
+                                "description": "Diff summary confirms commit 48f91 modified only banner.html and promo.css; zero payment gateway code touched.",
+                                "tool_call": "get_recent_deploys",
+                                "source_row": "deploys.csv: files_changed templates/banner.html;assets/promo.css",
+                            }
+                        ],
+                    ),
+                    Hypothesis(
+                        rank=3,
+                        cause="PostgreSQL database connection exhaustion.",
+                        confidence=0.08,
+                        evidence_for=[
+                            {
+                                "description": "Database connection count rose from 12 to 85.",
+                                "tool_call": "get_metrics",
+                                "source_row": "metrics.csv: db_connections 85",
+                            }
+                        ],
+                        evidence_against=[
+                            {
+                                "description": "Database query latencies are normal; connections were held by worker threads blocked on external payment socket reads.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: payment worker threads blocked on socket read",
+                            }
+                        ],
+                    ),
+                ],
+                proposed_fix=ProposedFix(
+                    fix_id="fix_enable_circuit_breaker",
+                    action="Activate circuit breaker on payment client with exponential backoff and jitter to halt retry storm.",
+                    risk_level=1,
+                    blast_radius="Fast-fails new checkout payments during provider outage; prevents service thread exhaustion.",
+                    rationale="Rehearsal in sandbox showed p95 latency restored to 340ms and active database connections dropped from 85 to 14.",
+                ),
+            )
+        elif self.scenario_id == "config_change_flag":
+            return InvestigationResult(
+                hypotheses=[
+                    Hypothesis(
+                        rank=1,
+                        cause="Dynamic configuration flag 'db_pool_timeout_ms' changed to 50ms, causing instantaneous query timeouts.",
+                        confidence=0.94,
+                        evidence_for=[
+                            {
+                                "description": "Node.js stack trace showed ConnectionTimeoutError: ResourceRequest timed out after 50ms.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: Error: ConnectionTimeoutError after 50ms",
+                            },
+                            {
+                                "description": "Config watcher log recorded db_pool_timeout_ms updated to 50ms right as error rate surged.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: dynamic config db_pool_timeout_ms updated to 50",
+                            },
+                            {
+                                "description": "Deploy history confirms zero code deploys in the last 48 hours.",
+                                "tool_call": "get_recent_deploys",
+                                "source_row": "deploys.csv: last deploy 2026-11-10",
+                            },
+                        ],
+                        evidence_against=[],
+                    ),
+                    Hypothesis(
+                        rank=2,
+                        cause="Node.js V8 event loop starvation.",
+                        confidence=0.20,
+                        evidence_for=[
+                            {
+                                "description": "Worker processes reported unhandled rejections across pool.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: unhandledRejection on 16 workers",
+                            }
+                        ],
+                        evidence_against=[
+                            {
+                                "description": "Memory remains normal at 382MB and CPU load is low; no synchronous blocking detected.",
+                                "tool_call": "get_metrics",
+                                "source_row": "metrics.csv: memory_mb 382",
+                            }
+                        ],
+                    ),
+                    Hypothesis(
+                        rank=3,
+                        cause="Routine database disk backup I/O saturation.",
+                        confidence=0.05,
+                        evidence_for=[
+                            {
+                                "description": "Database connections dropped to 2.",
+                                "tool_call": "get_metrics",
+                                "source_row": "metrics.csv: db_connections 2",
+                            }
+                        ],
+                        evidence_against=[
+                            {
+                                "description": "Backup was scheduled at 02:00 AM and completed; timeouts started at 03:14 AM immediately after config change.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: config reload at 03:14:02Z",
+                            }
+                        ],
+                    ),
+                ],
+                proposed_fix=ProposedFix(
+                    fix_id="fix_revert_config_flag",
+                    action="Revert dynamic configuration key db_pool_timeout_ms back to 5000ms via config store.",
+                    risk_level=0,
+                    blast_radius="Zero downtime dynamic configuration propagation without server restart.",
+                    rationale="Rehearsal in sandbox proved error rate dropped from 89.2% to 0.02% and latency normalized to 45ms.",
+                ),
+            )
+        else:  # ambiguous_escalate
+            return InvestigationResult(
+                hypotheses=[
+                    Hypothesis(
+                        rank=1,
+                        cause="Intermittent TCP reset packets and transit gateway packet loss on availability zone us-east-1b.",
+                        confidence=0.38,
+                        evidence_for=[
+                            {
+                                "description": "Python traceback recorded ConnectionResetError: [Errno 104] Connection reset by peer.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: ConnectionResetError [Errno 104]",
+                            }
+                        ],
+                        evidence_against=[
+                            {
+                                "description": "Only 4.2% of requests fail and drops are non-continuous, inconsistent with hard link down.",
+                                "tool_call": "get_metrics",
+                                "source_row": "metrics.csv: error_rate_pct 4.2",
+                            }
+                        ],
+                    ),
+                    Hypothesis(
+                        rank=2,
+                        cause="Edge DNS resolver intermittent resolution timeout (socket.gaierror).",
+                        confidence=0.34,
+                        evidence_for=[
+                            {
+                                "description": "DNS resolver logged socket.gaierror: [Errno -3] Temporary failure in name resolution.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: socket.gaierror temporary failure",
+                            }
+                        ],
+                        evidence_against=[
+                            {
+                                "description": "Local cached DNS entries succeed; failure is isolated to specific outbound lookups.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: Route /api/v1/checkout healthy 48ms",
+                            }
+                        ],
+                    ),
+                    Hypothesis(
+                        rank=3,
+                        cause="Worker node 4 transient CPU throttling burst.",
+                        confidence=0.22,
+                        evidence_for=[
+                            {
+                                "description": "Worker node 4 reported transient 94% CPU burst.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: node 4 CPU burst 94%",
+                            }
+                        ],
+                        evidence_against=[
+                            {
+                                "description": "Nodes 1-3 and 5-8 report normal <18% load; CPU burst lasted only 500ms.",
+                                "tool_call": "query_logs",
+                                "source_row": "logs.csv: other 7 nodes reporting <18%",
+                            }
+                        ],
+                    ),
+                ],
+                proposed_fix=ProposedFix(
+                    fix_id="fix_escalate_human_operator",
+                    action="Page Tier-3 Network/Infra On-Call engineer for manual packet capture and multi-AZ routing assessment.",
+                    risk_level=0,
+                    blast_radius="Zero traffic alteration; pages on-call engineer and schedules read-only diagnostics.",
+                    rationale="Conflicting signals across TCP, DNS, and node CPU preclude automated remediation; confidence remains below 40%.",
                 ),
             )
 

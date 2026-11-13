@@ -70,7 +70,14 @@ class TestScenariosEndpoint:
             assert "title" in s, f"Missing title in scenario: {s}"
             assert "service_name" in s, f"Missing service_name in scenario: {s}"
             assert "severity" in s, f"Missing severity in scenario: {s}"
-            assert s["id"] in ("bad_deploy_slow_queries", "connection_pool_leak", "memory_leak")
+            assert s["id"] in (
+                "bad_deploy_slow_queries",
+                "connection_pool_leak",
+                "memory_leak",
+                "third_party_outage",
+                "config_change_flag",
+                "ambiguous_escalate",
+            )
 
     def test_scenarios_read_from_data_files(self, client: TestClient, user_credentials):
         """Confirm values match metadata.json in data/scenarios directory."""

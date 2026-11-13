@@ -1,0 +1,6 @@
+{
+  "id": "ambiguous_escalate",
+  "title": "Intermittent network anomalies and degraded API routing",
+  "service_name": "Core API Gateway",
+  "severity": "SEV 2"
+}

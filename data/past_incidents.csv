@@ -19,3 +19,6 @@ INC-017,api errors 500 null pointer exception uncaught,deploy removed null check
 INC-018,memory growing heap dump large string objects,Response caching caching unbounded large payloads,Added max payload size limit of 1MB to response cache
 INC-019,database deadlock concurrent updates same row lock wait,Two background jobs updating same resource without consistent lock ordering,Sorted lock acquisition order alphabetically by resource ID
 INC-020,cpu spike background job runaway loop,Job scheduler retry backoff not implemented — tight loop on failure,Added exponential backoff with jitter and max retries=5
+INC-021,payment provider timeout 504 gateway retry storm,Upstream payment provider outage with un-jittered retry storm,Enabled circuit breaker and exponential backoff on payment gateway client
+INC-022,connection timeout dynamic config flag pool acquisition,Dynamic config sync altered db_pool_timeout_ms to 50ms,Reverted dynamic configuration flag db_pool_timeout_ms to 5000ms
+INC-023,intermittent network tcp rst dns failure conflicting symptoms,Transient multi-AZ transit gateway packet drops and edge DNS flakiness,Escalated to network infra on-call specialist for packet capture analysis

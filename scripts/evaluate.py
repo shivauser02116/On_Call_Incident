@@ -81,9 +81,21 @@ def evaluate_run(
     elif scenario_id == "connection_pool_leak":
         rc_match = ("connection" in cause_text or "pool" in cause_text) and ("leak" in cause_text or "middleware" in cause_text or "context" in cause_text)
         fix_match = result.proposed_fix.fix_id in ("fix_restart_app", "fix_connection_recycler")
-    else:  # memory_leak
+    elif scenario_id == "memory_leak":
         rc_match = ("memory" in cause_text or "oom" in cause_text or "leak" in cause_text) and ("logging" in cause_text or "request" in cause_text or "list" in cause_text)
         fix_match = result.proposed_fix.fix_id in ("fix_patch_middleware", "fix_restart_service")
+    elif scenario_id == "third_party_outage":
+        rc_match = ("payment" in cause_text or "payflow" in cause_text or "provider" in cause_text or "gateway" in cause_text) and ("timeout" in cause_text or "504" in cause_text or "retry" in cause_text or "outage" in cause_text)
+        fix_match = result.proposed_fix.fix_id == "fix_enable_circuit_breaker"
+    elif scenario_id == "config_change_flag":
+        rc_match = ("config" in cause_text or "flag" in cause_text or "pool_timeout" in cause_text) and ("timeout" in cause_text or "50ms" in cause_text or "etcd" in cause_text or "changed" in cause_text or "value" in cause_text)
+        fix_match = result.proposed_fix.fix_id in ("fix_revert_config_flag", "fix_restart_node_cluster")
+    elif scenario_id == "ambiguous_escalate":
+        rc_match = ("intermittent" in cause_text or "packet" in cause_text or "transit" in cause_text or "ambiguous" in cause_text or "conflicting" in cause_text or "gateway" in cause_text or "network" in cause_text)
+        fix_match = result.proposed_fix.fix_id in ("fix_escalate_human_operator", "fix_capture_diagnostics")
+    else:
+        rc_match = False
+        fix_match = False
 
     # Citations check: ensure every evidence item cites tool_call and source_row
     all_evidence = []

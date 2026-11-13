@@ -1,0 +1,10 @@
+root_cause: Dynamic configuration flag 'db_pool_timeout_ms' was inadvertently updated from 5000ms to 50ms in Consul/etcd configuration store via automated config sync. All async worker queries exceeded the 50ms threshold immediately under normal load, throwing ConnectionTimeoutError across the Node.js cluster.
+
+evidence: logs show 'Error: ConnectionTimeoutError: pool acquisition timed out after 50ms at Pool.acquire (/app/node_modules/pg-pool/index.js:342:19)' with thousands of uncaught rejections; deploys show NO recent code deploys (last deploy was 3 days ago); audit/config telemetry shows config flag 'db_pool_timeout_ms' altered at 03:14 AM.
+
+red_herrings:
+  1. Database disk I/O alert — minor routine backup I/O spike occurred at 02:00 AM, but disk IOPS returned to <10% prior to incident.
+  2. Node.js V8 heap warning — memory remained stable at ~380MB, not a memory leak.
+
+correct_fix: fix_revert_config_flag (risk_level 0) — dynamically revert db_pool_timeout_ms config key back to 5000ms
+alternative: fix_restart_node_cluster (risk_level 1) — restarts cluster but fails to resolve the bad configuration value

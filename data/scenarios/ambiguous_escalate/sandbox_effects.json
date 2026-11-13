@@ -1,0 +1,24 @@
+{
+  "fix_escalate_human_operator": {
+    "description": "Page Tier-3 Network and Infrastructure On-Call specialist for multi-AZ transit gateway assessment",
+    "risk_level": 0,
+    "blast_radius": "Zero traffic impact; pages on-call engineer and opens incident bridge",
+    "after_metrics": {
+      "p95_latency_ms": 1250,
+      "error_rate_pct": 4.2,
+      "memory_mb": 480,
+      "db_connections": 23
+    }
+  },
+  "fix_capture_diagnostics": {
+    "description": "Run non-destructive diagnostic capture (tcpdump, traceroute, and DNS resolution probe) on edge nodes",
+    "risk_level": 0,
+    "blast_radius": "Zero traffic disruption; saves packet captures and query telemetry to diagnostic bucket",
+    "after_metrics": {
+      "p95_latency_ms": 1250,
+      "error_rate_pct": 4.2,
+      "memory_mb": 485,
+      "db_connections": 23
+    }
+  }
+}

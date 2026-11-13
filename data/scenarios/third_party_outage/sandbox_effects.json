@@ -1,0 +1,24 @@
+{
+  "fix_enable_circuit_breaker": {
+    "description": "Trip circuit breaker open on payment gateway client and enable exponential backoff with jitter",
+    "risk_level": 1,
+    "blast_radius": "Fast failure (HTTP 503) for checkout payment attempts with graceful customer retry queue; avoids server thread pool exhaustion",
+    "after_metrics": {
+      "p95_latency_ms": 340,
+      "error_rate_pct": 0.2,
+      "memory_mb": 490,
+      "db_connections": 14
+    }
+  },
+  "fix_rollback_promo_deploy": {
+    "description": "Rollback promotional banner deploy commit 48f91 to previous release",
+    "risk_level": 2,
+    "blast_radius": "Full frontend container restart (~45s); promotional banner reverted but third-party payment gateway timeouts persist",
+    "after_metrics": {
+      "p95_latency_ms": 28100,
+      "error_rate_pct": 49.5,
+      "memory_mb": 510,
+      "db_connections": 85
+    }
+  }
+}

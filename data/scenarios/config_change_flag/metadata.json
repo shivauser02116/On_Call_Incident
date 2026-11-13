@@ -1,0 +1,6 @@
+{
+  "id": "config_change_flag",
+  "title": "Configuration flag regression and connection pool timeout",
+  "service_name": "User Session Service",
+  "severity": "SEV 1"
+}

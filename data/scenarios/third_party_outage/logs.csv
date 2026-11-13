@@ -1,0 +1,228 @@
+timestamp,level,message
+2026-11-12T02:00:00Z,INFO,Charge request #99800 processed in 150ms: customer=40000 amount=10.00 status=AUTHORIZED
+2026-11-12T02:00:20Z,INFO,Charge request #99801 processed in 157ms: customer=40003 amount=23.50 status=AUTHORIZED
+2026-11-12T02:00:40Z,INFO,Charge request #99802 processed in 164ms: customer=40006 amount=37.00 status=AUTHORIZED
+2026-11-12T02:01:00Z,INFO,Charge request #99803 processed in 171ms: customer=40009 amount=50.50 status=AUTHORIZED
+2026-11-12T02:01:20Z,INFO,Charge request #99804 processed in 178ms: customer=40012 amount=64.00 status=AUTHORIZED
+2026-11-12T02:01:40Z,INFO,Charge request #99805 processed in 185ms: customer=40015 amount=77.50 status=AUTHORIZED
+2026-11-12T02:02:00Z,INFO,Charge request #99806 processed in 192ms: customer=40018 amount=91.00 status=AUTHORIZED
+2026-11-12T02:02:20Z,INFO,Charge request #99807 processed in 199ms: customer=40021 amount=104.50 status=AUTHORIZED
+2026-11-12T02:02:40Z,INFO,Charge request #99808 processed in 206ms: customer=40024 amount=118.00 status=AUTHORIZED
+2026-11-12T02:03:00Z,INFO,Charge request #99809 processed in 213ms: customer=40027 amount=131.50 status=AUTHORIZED
+2026-11-12T02:03:20Z,INFO,Charge request #99810 processed in 220ms: customer=40030 amount=145.00 status=AUTHORIZED
+2026-11-12T02:03:40Z,INFO,Charge request #99811 processed in 227ms: customer=40033 amount=158.50 status=AUTHORIZED
+2026-11-12T02:04:00Z,INFO,Charge request #99812 processed in 234ms: customer=40036 amount=172.00 status=AUTHORIZED
+2026-11-12T02:04:20Z,INFO,Charge request #99813 processed in 241ms: customer=40039 amount=185.50 status=AUTHORIZED
+2026-11-12T02:04:40Z,INFO,Charge request #99814 processed in 248ms: customer=40042 amount=199.00 status=AUTHORIZED
+2026-11-12T02:05:00Z,INFO,Charge request #99815 processed in 155ms: customer=40045 amount=12.50 status=AUTHORIZED
+2026-11-12T02:05:20Z,INFO,Charge request #99816 processed in 162ms: customer=40048 amount=26.00 status=AUTHORIZED
+2026-11-12T02:05:40Z,INFO,Charge request #99817 processed in 169ms: customer=40051 amount=39.50 status=AUTHORIZED
+2026-11-12T02:06:00Z,INFO,Charge request #99818 processed in 176ms: customer=40054 amount=53.00 status=AUTHORIZED
+2026-11-12T02:06:20Z,INFO,Charge request #99819 processed in 183ms: customer=40057 amount=66.50 status=AUTHORIZED
+2026-11-12T02:06:40Z,INFO,Charge request #99820 processed in 190ms: customer=40060 amount=80.00 status=AUTHORIZED
+2026-11-12T02:07:00Z,INFO,Charge request #99821 processed in 197ms: customer=40063 amount=93.50 status=AUTHORIZED
+2026-11-12T02:07:20Z,INFO,Charge request #99822 processed in 204ms: customer=40066 amount=107.00 status=AUTHORIZED
+2026-11-12T02:07:40Z,INFO,Charge request #99823 processed in 211ms: customer=40069 amount=120.50 status=AUTHORIZED
+2026-11-12T02:08:00Z,INFO,Charge request #99824 processed in 218ms: customer=40072 amount=134.00 status=AUTHORIZED
+2026-11-12T02:08:20Z,INFO,Charge request #99825 processed in 225ms: customer=40075 amount=147.50 status=AUTHORIZED
+2026-11-12T02:08:40Z,INFO,Charge request #99826 processed in 232ms: customer=40078 amount=161.00 status=AUTHORIZED
+2026-11-12T02:09:00Z,INFO,Charge request #99827 processed in 239ms: customer=40081 amount=174.50 status=AUTHORIZED
+2026-11-12T02:09:20Z,INFO,Charge request #99828 processed in 246ms: customer=40084 amount=188.00 status=AUTHORIZED
+2026-11-12T02:09:40Z,INFO,Charge request #99829 processed in 153ms: customer=40087 amount=201.50 status=AUTHORIZED
+2026-11-12T02:10:00Z,INFO,Charge request #99830 processed in 160ms: customer=40090 amount=15.00 status=AUTHORIZED
+2026-11-12T02:10:20Z,INFO,Charge request #99831 processed in 167ms: customer=40093 amount=28.50 status=AUTHORIZED
+2026-11-12T02:10:40Z,INFO,Charge request #99832 processed in 174ms: customer=40096 amount=42.00 status=AUTHORIZED
+2026-11-12T02:11:00Z,INFO,Charge request #99833 processed in 181ms: customer=40099 amount=55.50 status=AUTHORIZED
+2026-11-12T02:11:20Z,INFO,Charge request #99834 processed in 188ms: customer=40102 amount=69.00 status=AUTHORIZED
+2026-11-12T02:11:40Z,INFO,Charge request #99835 processed in 195ms: customer=40105 amount=82.50 status=AUTHORIZED
+2026-11-12T02:12:00Z,INFO,Charge request #99836 processed in 202ms: customer=40108 amount=96.00 status=AUTHORIZED
+2026-11-12T02:12:20Z,INFO,Charge request #99837 processed in 209ms: customer=40111 amount=109.50 status=AUTHORIZED
+2026-11-12T02:12:40Z,INFO,Charge request #99838 processed in 216ms: customer=40114 amount=123.00 status=AUTHORIZED
+2026-11-12T02:13:00Z,INFO,Charge request #99839 processed in 223ms: customer=40117 amount=136.50 status=AUTHORIZED
+2026-11-12T02:13:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:13:40Z,INFO,Charge request #99841 processed in 420ms: customer=40123 amount=35.00 status=AUTHORIZED
+2026-11-12T02:14:00Z,WARN,PayFlow API latency elevated: upstream returned 504 Gateway Timeout in 10002ms on POST /v2/charges for txn #99842
+2026-11-12T02:14:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:14:40Z,INFO,Charge request #99844 processed in 420ms: customer=40132 amount=35.00 status=AUTHORIZED
+2026-11-12T02:15:00Z,WARN,PayFlow API latency elevated: upstream returned 504 Gateway Timeout in 10002ms on POST /v2/charges for txn #99845
+2026-11-12T02:15:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:15:40Z,INFO,Charge request #99847 processed in 420ms: customer=40141 amount=35.00 status=AUTHORIZED
+2026-11-12T02:16:00Z,WARN,PayFlow API latency elevated: upstream returned 504 Gateway Timeout in 10002ms on POST /v2/charges for txn #99848
+2026-11-12T02:16:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:16:40Z,INFO,Charge request #99850 processed in 420ms: customer=40150 amount=35.00 status=AUTHORIZED
+2026-11-12T02:17:00Z,WARN,PayFlow API latency elevated: upstream returned 504 Gateway Timeout in 10002ms on POST /v2/charges for txn #99851
+2026-11-12T02:17:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:17:40Z,INFO,Charge request #99853 processed in 420ms: customer=40159 amount=35.00 status=AUTHORIZED
+2026-11-12T02:18:00Z,WARN,PayFlow API latency elevated: upstream returned 504 Gateway Timeout in 10002ms on POST /v2/charges for txn #99854
+2026-11-12T02:18:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:18:40Z,INFO,Charge request #99856 processed in 420ms: customer=40168 amount=35.00 status=AUTHORIZED
+2026-11-12T02:19:00Z,WARN,PayFlow API latency elevated: upstream returned 504 Gateway Timeout in 10002ms on POST /v2/charges for txn #99857
+2026-11-12T02:19:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:19:40Z,INFO,Charge request #99859 processed in 420ms: customer=40177 amount=35.00 status=AUTHORIZED
+2026-11-12T02:20:00Z,WARN,Immediate un-jittered retry initiated for transaction #99860 (attempt 2 of 5)
+2026-11-12T02:20:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:20:40Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:21:00Z,WARN,Checkout fallback queue engaged for customer 40189; transaction #99863 held in PENDING
+2026-11-12T02:21:20Z,WARN,Immediate un-jittered retry initiated for transaction #99864 (attempt 2 of 5)
+2026-11-12T02:21:40Z,INFO,Deploy check: Commit 48f91 (alice) verified: assets/promo.css and templates/banner.html only; zero payment gateway code touched
+2026-11-12T02:22:00Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:22:20Z,WARN,Checkout fallback queue engaged for customer 40201; transaction #99867 held in PENDING
+2026-11-12T02:22:40Z,WARN,Immediate un-jittered retry initiated for transaction #99868 (attempt 2 of 5)
+2026-11-12T02:23:00Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:23:20Z,ERROR,Retry storm detected: 1420 payment worker threads blocked in WAITING state on upstream gateway socket read
+2026-11-12T02:23:40Z,WARN,Checkout fallback queue engaged for customer 40213; transaction #99871 held in PENDING
+2026-11-12T02:24:00Z,WARN,Immediate un-jittered retry initiated for transaction #99872 (attempt 2 of 5)
+2026-11-12T02:24:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:24:40Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:25:00Z,WARN,Checkout fallback queue engaged for customer 40225; transaction #99875 held in PENDING
+2026-11-12T02:25:20Z,WARN,Immediate un-jittered retry initiated for transaction #99876 (attempt 2 of 5)
+2026-11-12T02:25:40Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:26:00Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:26:20Z,WARN,Checkout fallback queue engaged for customer 40237; transaction #99879 held in PENDING
+2026-11-12T02:26:40Z,WARN,Immediate un-jittered retry initiated for transaction #99880 (attempt 2 of 5)
+2026-11-12T02:27:00Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:27:20Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:27:40Z,WARN,Checkout fallback queue engaged for customer 40249; transaction #99883 held in PENDING
+2026-11-12T02:28:00Z,WARN,Immediate un-jittered retry initiated for transaction #99884 (attempt 2 of 5)
+2026-11-12T02:28:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:28:40Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:29:00Z,WARN,Checkout fallback queue engaged for customer 40261; transaction #99887 held in PENDING
+2026-11-12T02:29:20Z,WARN,Immediate un-jittered retry initiated for transaction #99888 (attempt 2 of 5)
+2026-11-12T02:29:40Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:30:00Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:30:20Z,WARN,Checkout fallback queue engaged for customer 40273; transaction #99891 held in PENDING
+2026-11-12T02:30:40Z,WARN,Immediate un-jittered retry initiated for transaction #99892 (attempt 2 of 5)
+2026-11-12T02:31:00Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:31:20Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:31:40Z,WARN,Checkout fallback queue engaged for customer 40285; transaction #99895 held in PENDING
+2026-11-12T02:32:00Z,WARN,Immediate un-jittered retry initiated for transaction #99896 (attempt 2 of 5)
+2026-11-12T02:32:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:32:40Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:33:00Z,WARN,Checkout fallback queue engaged for customer 40297; transaction #99899 held in PENDING
+2026-11-12T02:33:20Z,WARN,Immediate un-jittered retry initiated for transaction #99900 (attempt 2 of 5)
+2026-11-12T02:33:40Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:34:00Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:34:20Z,WARN,Checkout fallback queue engaged for customer 40309; transaction #99903 held in PENDING
+2026-11-12T02:34:40Z,WARN,Immediate un-jittered retry initiated for transaction #99904 (attempt 2 of 5)
+2026-11-12T02:35:00Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"
+2026-11-12T02:35:20Z,ERROR,"com.checkout.exception.PaymentGatewayUnavailableException: Upstream provider PayFlow returned HTTP 504 across all active channels
+	at com.checkout.service.PaymentProcessor.handleFailure(PaymentProcessor.java:210)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:152)"
+2026-11-12T02:35:40Z,WARN,Checkout fallback queue engaged for customer 40321; transaction #99907 held in PENDING
+2026-11-12T02:36:00Z,WARN,Immediate un-jittered retry initiated for transaction #99908 (attempt 2 of 5)
+2026-11-12T02:36:20Z,ERROR,"java.net.SocketTimeoutException: Read timed out
+	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+	at com.payment.client.HttpPaymentClient.execute(HttpPaymentClient.java:184)
+	at com.payment.gateway.PayFlowClient.charge(PayFlowClient.java:92)
+	at com.checkout.service.PaymentProcessor.processTransaction(PaymentProcessor.java:144)"

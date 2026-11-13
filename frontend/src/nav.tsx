@@ -63,6 +63,27 @@ export interface UserProfile {
   last_sign_in?: string
 }
 
+export interface PlanStep {
+  step: number
+  tool: string
+  description: string
+  status?: 'pending' | 'running' | 'completed' | 'skipped'
+}
+
+export interface TraceStep {
+  index: number
+  toolName: string
+  arguments: Record<string, any>
+  summary: string
+  durationMs: number
+}
+
+export interface AgentTotals {
+  toolCalls: number
+  tokens: number
+  elapsedMs: number
+}
+
 export function getCsrfToken(): string {
   if (typeof document === 'undefined') return ''
   const prefix = 'csrf_token='
@@ -94,6 +115,14 @@ type Nav = {
   setRehearsalResult: (res: RehearsalResult | null) => void
   currentUser: UserProfile | null
   setCurrentUser: (u: UserProfile | null) => void
+  agentPlan: PlanStep[]
+  setAgentPlan: React.Dispatch<React.SetStateAction<PlanStep[]>>
+  replanReason: string | null
+  setReplanReason: React.Dispatch<React.SetStateAction<string | null>>
+  agentTrace: TraceStep[]
+  setAgentTrace: React.Dispatch<React.SetStateAction<TraceStep[]>>
+  agentTotals: AgentTotals | null
+  setAgentTotals: React.Dispatch<React.SetStateAction<AgentTotals | null>>
 }
 
 const Ctx = createContext<Nav | null>(null)
@@ -107,6 +136,10 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
   const [investigationResult, setInvestigationResult] = useState<InvestigationResult | null>(null)
   const [rehearsalResult, setRehearsalResult] = useState<RehearsalResult | null>(null)
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null)
+  const [agentPlan, setAgentPlan] = useState<PlanStep[]>([])
+  const [replanReason, setReplanReason] = useState<string | null>(null)
+  const [agentTrace, setAgentTrace] = useState<TraceStep[]>([])
+  const [agentTotals, setAgentTotals] = useState<AgentTotals | null>(null)
 
   const routeRef = useRef(loc.route)
   routeRef.current = loc.route
@@ -150,6 +183,10 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     setInvestigationResult(null)
     setRehearsalResult(null)
     setCurrentUser(null)
+    setAgentPlan([])
+    setReplanReason(null)
+    setAgentTrace([])
+    setAgentTotals(null)
     window.location.hash = 'login'
   }, [])
 
@@ -172,6 +209,14 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
         setRehearsalResult,
         currentUser,
         setCurrentUser,
+        agentPlan,
+        setAgentPlan,
+        replanReason,
+        setReplanReason,
+        agentTrace,
+        setAgentTrace,
+        agentTotals,
+        setAgentTotals,
       }}
     >
       {children}

@@ -128,6 +128,32 @@ class AuditLogQuery(BaseModel):
     user_id: Optional[int] = Field(None, ge=1)
 
 
+# ── Plan and Replan Models (Phase 9) ───────────────────────────────────────
+
+class PlanStep(BaseModel):
+    model_config = ConfigDict(strict=False)
+
+    step: int = Field(ge=1, le=20)
+    tool: str = Field(max_length=64)
+    description: str = Field(max_length=512)
+    status: Literal["pending", "running", "completed", "skipped"] = "pending"
+
+
+class PlanEvent(BaseModel):
+    model_config = ConfigDict(strict=False)
+
+    type: Literal["plan"] = "plan"
+    steps: list[PlanStep] = Field(min_length=1)
+
+
+class ReplanEvent(BaseModel):
+    model_config = ConfigDict(strict=False)
+
+    type: Literal["replan"] = "replan"
+    reason: str = Field(max_length=1024)
+    steps: list[PlanStep] = Field(min_length=1)
+
+
 class LockUserRequest(BaseModel):
     model_config = ConfigDict(strict=True)
 

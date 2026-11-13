@@ -3,6 +3,7 @@ import { ActionBar, Shell } from '../components/Frame'
 import { Icon } from '../components/Icon'
 import { useNav } from '../nav'
 import { Card, Chip, PageHeader, PrimaryButton } from '../components/ui'
+import { AgentTraceDrawer } from '../components/AgentTraceDrawer'
 
 interface TheoryItem {
   title: string
@@ -199,6 +200,9 @@ export function Theories({ initialOpen = [0] }: { initialOpen?: number[] }) {
           />
         ))}
       </div>
+
+      {/* Collapsed Agent Trace Drawer (Phase 9) */}
+      <AgentTraceDrawer />
     </Shell>
   )
 }

@@ -1,6 +1,6 @@
 {
   "fix_connection_recycler": {
-    "description": "Deploy connection recycler sidecar that forcefully closes idle connections held >60s (read-only monitoring tool)",
+    "description": "Deploy connection recycler sidecar that forcefully reclaims leaked idle connections held >60s",
     "risk_level": 0,
     "blast_radius": "No service disruption \u2014 recycler runs alongside app, closes only idle leaked connections",
     "after_metrics": {

@@ -1,8 +1,8 @@
 {
   "fix_restart_service": {
     "description": "Emergency restart of all workers to clear accumulated memory (temporary \u2014 leak will recur)",
-    "risk_level": 0,
-    "blast_radius": "~20 seconds of downtime during rolling restart; memory returns to baseline but leak recurs without code fix",
+    "risk_level": 1,
+    "blast_radius": "Rolling restart with ~15s elevated latency; worker memory returns to baseline but leak recurs without code fix",
     "after_metrics": {
       "p95_latency_ms": 90,
       "error_rate_pct": 0.05,

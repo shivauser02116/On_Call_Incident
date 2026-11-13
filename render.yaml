@@ -1,0 +1,25 @@
+# Render Blueprint: On-Call Incident Rehearsal Frontend (Static Site)
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: on-call-incident-rehearsal
+    runtime: static
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+    routes:
+      # Single-Page Application (SPA) fallback: route all paths to index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff

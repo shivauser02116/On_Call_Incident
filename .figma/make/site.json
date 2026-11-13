@@ -1,0 +1,10 @@
+{
+  "description": "Helps on-call engineers quickly diagnose outages with ranked, evidence-backed causes and safely test fixes before human approval.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,0 +1,10 @@
+root_cause: Upstream payment provider (PayFlow Global) experiencing major network outage and 504 Gateway Timeouts. Un-jittered aggressive retry storm from Checkout API workers exhausted downstream connection pools and worker threads.
+
+evidence: logs show 'java.net.SocketTimeoutException: Read timed out at com.payment.client.HttpPaymentClient.execute' with 1400+ failed requests; metrics show p95 payment latency spiked from 320ms to 28000ms and thread pool saturation; deploys show commit 48f91 ('feat: update checkout promotional banner and holiday layout') deployed 12 minutes prior, but that change touched only frontend CSS and promo template assets and did not touch the payment gateway client.
+
+red_herrings:
+  1. Deploy commit 48f91 (alice, 'feat: update checkout promotional banner') deployed 12 minutes ago — red herring, template changes only, zero backend payment code touched.
+  2. PostgreSQL connection count spike — connection increase was caused by blocked waiting worker threads holding transactions, not a database failure.
+
+correct_fix: fix_enable_circuit_breaker (risk_level 1) — activate circuit breaker and enable exponential backoff with jitter on payment gateway client
+alternative: fix_rollback_promo_deploy (risk_level 2) — rolling back promo banner will cause unnecessary downtime without resolving upstream payment gateway outage

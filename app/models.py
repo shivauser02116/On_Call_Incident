@@ -18,6 +18,9 @@ ALLOWED_SCENARIOS: frozenset[str] = frozenset({
     "bad_deploy_slow_queries",
     "connection_pool_leak",
     "memory_leak",
+    "third_party_outage",
+    "config_change_flag",
+    "ambiguous_escalate",
 })
 
 ALLOWED_FIX_IDS: frozenset[str] = frozenset({
@@ -31,6 +34,15 @@ ALLOWED_FIX_IDS: frozenset[str] = frozenset({
     "fix_restart_service",
     "fix_patch_middleware",
     "fix_increase_memory",
+    # third_party_outage
+    "fix_enable_circuit_breaker",
+    "fix_rollback_promo_deploy",
+    # config_change_flag
+    "fix_revert_config_flag",
+    "fix_restart_node_cluster",
+    # ambiguous_escalate
+    "fix_escalate_human_operator",
+    "fix_capture_diagnostics",
 })
 
 

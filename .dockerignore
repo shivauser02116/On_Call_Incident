@@ -1,0 +1,52 @@
+# ── Secrets & credentials ─────────────────────────────────────────────────
+.env
+.env.*
+*.env
+
+# ── Version control ───────────────────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+
+# ── Test suite (not needed at runtime) ───────────────────────────────────
+tests/
+pytest.ini
+pyproject.toml
+.pytest_cache/
+
+# ── Python build artifacts ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.mypy_cache/
+.ruff_cache/
+
+# ── Frontend build inputs (only dist/ is needed in the image) ─────────────
+frontend/node_modules/
+frontend/src/
+frontend/public/
+frontend/index.html
+frontend/vite.config.ts
+frontend/tsconfig.json
+frontend/package.json
+frontend/pnpm-lock.yaml
+
+# ── Local development databases ───────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+
+# ── OS & editor noise ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# ── Docs & CI ─────────────────────────────────────────────────────────────
+README.md
+SECURITY_AUDIT.md
+CLAUDE.md
+AGENTS.md
+docs/

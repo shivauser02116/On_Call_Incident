@@ -39,7 +39,14 @@ class TestStopwatchMode:
 
     def test_manual_mode_all_scenarios_have_raw_logs(self, client: TestClient, user_credentials):
         session = login(client, user_credentials["username"], user_credentials["password"])
-        for sid in ["bad_deploy_slow_queries", "connection_pool_leak", "memory_leak"]:
+        for sid in [
+            "bad_deploy_slow_queries",
+            "connection_pool_leak",
+            "memory_leak",
+            "third_party_outage",
+            "config_change_flag",
+            "ambiguous_escalate",
+        ]:
             r = client.get(f"/api/scenarios/{sid}/raw_logs", cookies={"session": session})
             assert r.status_code == 200
             assert r.json()["count"] >= 100

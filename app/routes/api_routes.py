@@ -24,18 +24,48 @@ from app.auth import (
     require_auth,
     verify_csrf_token,
 )
-from app.data_loader import load_logs, load_sandbox_effects, validate_scenario_id
+from app.data_loader import (
+    load_all_scenarios_metadata,
+    load_logs,
+    load_sandbox_effects,
+    validate_scenario_id,
+)
+from app.limiter import limiter
 from app.models import ALLOWED_FIX_IDS, ALLOWED_SCENARIOS, ApproveFixRequest, TriggerAlertRequest
 
 router = APIRouter(prefix="/api", tags=["api"])
 
 
-@router.get("/scenarios")
-async def list_scenarios(
+@router.get("/me")
+@limiter.limit("60/minute")
+async def get_current_user_profile(
+    request: Request,
     user: AuthenticatedUser = Depends(require_auth),
 ) -> JSONResponse:
-    """Return the list of available scenario IDs."""
-    return JSONResponse(content={"scenarios": sorted(ALLOWED_SCENARIOS)})
+    """
+    Return current authenticated user profile.
+    Strictly returns: username, role, last_sign_in only.
+    Never exposes password hashes, session tokens, salts, or internal secrets.
+    """
+    last_sign_in = db.get_last_sign_in(user.user_id)
+    return JSONResponse(
+        content={
+            "username": user.username,
+            "role": user.role,
+            "last_sign_in": last_sign_in,
+        }
+    )
+
+
+@router.get("/scenarios")
+@limiter.limit("60/minute")
+async def list_scenarios(
+    request: Request,
+    user: AuthenticatedUser = Depends(require_auth),
+) -> JSONResponse:
+    """Return the list of available scenarios with metadata from data files."""
+    scenarios_list = load_all_scenarios_metadata()
+    return JSONResponse(content={"scenarios": scenarios_list})
 
 
 @router.get("/scenarios/{scenario_id}/raw_logs")

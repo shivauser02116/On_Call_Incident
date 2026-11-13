@@ -18,7 +18,14 @@ from app.data_loader import (
 
 class TestValidateScenarioId:
     def test_valid_scenarios_accepted(self):
-        for sid in ["bad_deploy_slow_queries", "connection_pool_leak", "memory_leak"]:
+        for sid in [
+            "bad_deploy_slow_queries",
+            "connection_pool_leak",
+            "memory_leak",
+            "third_party_outage",
+            "config_change_flag",
+            "ambiguous_escalate",
+        ]:
             assert validate_scenario_id(sid) == sid
 
     def test_path_traversal_blocked_dotdot(self):
@@ -91,7 +98,14 @@ class TestLoadLogs:
             load_logs("../etc/passwd")
 
     def test_all_scenarios_load(self):
-        for sid in ["bad_deploy_slow_queries", "connection_pool_leak", "memory_leak"]:
+        for sid in [
+            "bad_deploy_slow_queries",
+            "connection_pool_leak",
+            "memory_leak",
+            "third_party_outage",
+            "config_change_flag",
+            "ambiguous_escalate",
+        ]:
             rows = load_logs(sid)
             assert len(rows) > 0, f"No logs for {sid}"
 
@@ -133,7 +147,14 @@ class TestLoadDeploys:
 
 class TestLoadSandboxEffects:
     def test_sandbox_effects_all_scenarios(self):
-        for sid in ["bad_deploy_slow_queries", "connection_pool_leak", "memory_leak"]:
+        for sid in [
+            "bad_deploy_slow_queries",
+            "connection_pool_leak",
+            "memory_leak",
+            "third_party_outage",
+            "config_change_flag",
+            "ambiguous_escalate",
+        ]:
             effects = load_sandbox_effects(sid)
             assert isinstance(effects, dict)
             assert len(effects) > 0
@@ -148,7 +169,14 @@ class TestLoadSandboxEffects:
         assert fix["risk_level"] in (0, 1, 2)
 
     def test_sandbox_effects_risk_levels_valid(self):
-        for sid in ["bad_deploy_slow_queries", "connection_pool_leak", "memory_leak"]:
+        for sid in [
+            "bad_deploy_slow_queries",
+            "connection_pool_leak",
+            "memory_leak",
+            "third_party_outage",
+            "config_change_flag",
+            "ambiguous_escalate",
+        ]:
             effects = load_sandbox_effects(sid)
             for fix_id, effect in effects.items():
                 assert effect["risk_level"] in (0, 1, 2), f"{fix_id} has invalid risk_level"

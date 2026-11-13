@@ -37,7 +37,10 @@ async def health() -> dict:
 @router.get("/login", include_in_schema=False)
 async def login_page(request: Request) -> Response:
     """Serve the login HTML page and set a fresh CSRF cookie."""
-    response = FileResponse("static/login.html")
+    import os
+    dist_html = "frontend/dist/index.html"
+    file_path = dist_html if os.path.isfile(dist_html) else "static/login.html"
+    response = FileResponse(file_path)
     csrf_token = generate_csrf_token()
     set_csrf_cookie(response, csrf_token)
     return response

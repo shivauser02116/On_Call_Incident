@@ -1,0 +1,10 @@
+root_cause: Conflicting and intermittent multi-system degradation. Telemetry shows intermittent TCP RST packets from availability zone us-east-1b transit gateway, concurrent with cloud provider edge DNS resolution drops and periodic BGP route flapping. Confidence in any single automated remediation is below threshold (<0.40).
+
+evidence: logs show intermittent Python tracebacks with ConnectionResetError, intermittent DNS lookup failure (socket.gaierror: [Errno -3] Temporary failure in name resolution), and intermittent CPU throttling spikes on worker node 4; metrics show erratic p95 jitter jumping between 120ms and 4500ms without sustained pattern; no deploy matches the timeline.
+
+red_herrings:
+  1. Worker node 4 CPU throttling — throttling occurs in short 500ms bursts but node 1, 2, 3 show normal 15% load.
+  2. Redis cache miss rate increase — caused by failed upstream requests skipping cache, not a cache outage.
+
+correct_fix: fix_escalate_human_operator (risk_level 0) — page Tier-3 Network/Infra On-Call engineer for manual packet capture and multi-AZ failover assessment
+alternative: fix_capture_diagnostics (risk_level 0) — run read-only diagnostic capture (tcpdump, traceroute, DNS query probe) without altering production traffic

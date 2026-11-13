@@ -1,0 +1,6 @@
+{
+  "id": "connection_pool_leak",
+  "title": "Database connection pool exhausted",
+  "service_name": "Order Service",
+  "severity": "SEV 1"
+}

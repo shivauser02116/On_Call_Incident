@@ -103,8 +103,8 @@ def scan_file(file_path: Path) -> list[str]:
 def scan_working_dir() -> list[str]:
     issues = []
     for root, dirs, files in os.walk(ROOT):
-        # Skip git, cache, and venvs
-        dirs[:] = [d for d in dirs if d not in (".git", ".venv", "venv", "__pycache__", ".pytest_cache")]
+        # Skip git, cache, venvs, and node_modules
+        dirs[:] = [d for d in dirs if d not in (".git", ".venv", "venv", "__pycache__", ".pytest_cache", "node_modules")]
         for file in files:
             path = Path(root) / file
             issues.extend(scan_file(path))

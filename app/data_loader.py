@@ -52,6 +52,41 @@ def _scenario_path(scenario_id: str) -> Path:
     return path
 
 
+def load_scenario_metadata(scenario_id: str) -> dict[str, Any]:
+    """
+    Load metadata for a scenario from data/scenarios/<scenario_id>/metadata.json.
+    Falls back to sensible defaults if metadata.json is not present.
+    """
+    sid = validate_scenario_id(scenario_id)
+    meta_path = _scenario_path(sid) / "metadata.json"
+    if meta_path.exists():
+        try:
+            with open(meta_path, encoding="utf-8") as f:
+                data = json.load(f)
+                return {
+                    "id": sid,
+                    "title": _sanitize_string(str(data.get("title", sid))),
+                    "service_name": _sanitize_string(str(data.get("service_name", "Production Service"))),
+                    "severity": _sanitize_string(str(data.get("severity", "SEV 2"))),
+                }
+        except Exception:
+            pass
+
+    # Default fallback
+    formatted_title = sid.replace("_", " ").title()
+    return {
+        "id": sid,
+        "title": formatted_title,
+        "service_name": "Production Service",
+        "severity": "SEV 2",
+    }
+
+
+def load_all_scenarios_metadata() -> list[dict[str, Any]]:
+    """Return metadata for all allowlisted scenarios in sorted order."""
+    return [load_scenario_metadata(sid) for sid in sorted(ALLOWED_SCENARIOS)]
+
+
 def _sanitize_string(value: str) -> str:
     """
     Strip control characters and prompt-injection markers from string values.

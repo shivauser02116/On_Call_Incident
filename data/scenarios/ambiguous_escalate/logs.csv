@@ -1,0 +1,235 @@
+timestamp,level,message
+2026-11-12T18:00:00Z,INFO,Ingress edge router rtr-01: proxy pass request #5000 status=200 in 22ms
+2026-11-12T18:00:20Z,INFO,Ingress edge router rtr-02: proxy pass request #5001 status=200 in 25ms
+2026-11-12T18:00:40Z,INFO,Ingress edge router rtr-03: proxy pass request #5002 status=200 in 28ms
+2026-11-12T18:01:00Z,INFO,Ingress edge router rtr-04: proxy pass request #5003 status=200 in 31ms
+2026-11-12T18:01:20Z,INFO,Ingress edge router rtr-01: proxy pass request #5004 status=200 in 34ms
+2026-11-12T18:01:40Z,INFO,Ingress edge router rtr-02: proxy pass request #5005 status=200 in 37ms
+2026-11-12T18:02:00Z,INFO,Ingress edge router rtr-03: proxy pass request #5006 status=200 in 40ms
+2026-11-12T18:02:20Z,INFO,Ingress edge router rtr-04: proxy pass request #5007 status=200 in 43ms
+2026-11-12T18:02:40Z,INFO,Ingress edge router rtr-01: proxy pass request #5008 status=200 in 46ms
+2026-11-12T18:03:00Z,INFO,Ingress edge router rtr-02: proxy pass request #5009 status=200 in 24ms
+2026-11-12T18:03:20Z,INFO,Ingress edge router rtr-03: proxy pass request #5010 status=200 in 27ms
+2026-11-12T18:03:40Z,INFO,Ingress edge router rtr-04: proxy pass request #5011 status=200 in 30ms
+2026-11-12T18:04:00Z,INFO,Ingress edge router rtr-01: proxy pass request #5012 status=200 in 33ms
+2026-11-12T18:04:20Z,INFO,Ingress edge router rtr-02: proxy pass request #5013 status=200 in 36ms
+2026-11-12T18:04:40Z,INFO,Ingress edge router rtr-03: proxy pass request #5014 status=200 in 39ms
+2026-11-12T18:05:00Z,INFO,Ingress edge router rtr-04: proxy pass request #5015 status=200 in 42ms
+2026-11-12T18:05:20Z,INFO,Ingress edge router rtr-01: proxy pass request #5016 status=200 in 45ms
+2026-11-12T18:05:40Z,INFO,Ingress edge router rtr-02: proxy pass request #5017 status=200 in 23ms
+2026-11-12T18:06:00Z,INFO,Ingress edge router rtr-03: proxy pass request #5018 status=200 in 26ms
+2026-11-12T18:06:20Z,INFO,Ingress edge router rtr-04: proxy pass request #5019 status=200 in 29ms
+2026-11-12T18:06:40Z,INFO,Ingress edge router rtr-01: proxy pass request #5020 status=200 in 32ms
+2026-11-12T18:07:00Z,INFO,Ingress edge router rtr-02: proxy pass request #5021 status=200 in 35ms
+2026-11-12T18:07:20Z,INFO,Ingress edge router rtr-03: proxy pass request #5022 status=200 in 38ms
+2026-11-12T18:07:40Z,INFO,Ingress edge router rtr-04: proxy pass request #5023 status=200 in 41ms
+2026-11-12T18:08:00Z,INFO,Ingress edge router rtr-01: proxy pass request #5024 status=200 in 44ms
+2026-11-12T18:08:20Z,INFO,Ingress edge router rtr-02: proxy pass request #5025 status=200 in 22ms
+2026-11-12T18:08:40Z,INFO,Ingress edge router rtr-03: proxy pass request #5026 status=200 in 25ms
+2026-11-12T18:09:00Z,INFO,Ingress edge router rtr-04: proxy pass request #5027 status=200 in 28ms
+2026-11-12T18:09:20Z,INFO,Ingress edge router rtr-01: proxy pass request #5028 status=200 in 31ms
+2026-11-12T18:09:40Z,INFO,Ingress edge router rtr-02: proxy pass request #5029 status=200 in 34ms
+2026-11-12T18:10:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:10:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:10:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:11:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:11:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:11:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:12:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:12:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:12:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:13:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:13:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:13:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:14:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:14:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:14:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:15:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:15:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:15:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:16:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:16:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:16:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:17:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:17:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:17:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:18:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:18:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:18:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:19:00Z,WARN,TCP connection reset from upstream peer edge-worker-01 (rst received during handshake)
+2026-11-12T18:19:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:19:40Z,INFO,Edge node ingress-01 reports 0.1% error rate; node ingress-03 reports 14.2% error rate
+2026-11-12T18:20:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:20:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:20:40Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:21:00Z,INFO,Ingress edge router rtr-04: proxy pass request #5063 status=200 in 28ms
+2026-11-12T18:21:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:21:40Z,WARN,NetworkTelemetry: upstream switch core-sw-02 reporting intermittent CRC frame drops on 40GbE trunk port 18
+2026-11-12T18:22:00Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:22:20Z,INFO,Ingress edge router rtr-04: proxy pass request #5067 status=200 in 28ms
+2026-11-12T18:22:40Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:23:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:23:20Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:23:40Z,INFO,Ingress edge router rtr-04: proxy pass request #5071 status=200 in 28ms
+2026-11-12T18:24:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:24:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:24:40Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:25:00Z,INFO,Ingress edge router rtr-04: proxy pass request #5075 status=200 in 28ms
+2026-11-12T18:25:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:25:40Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:26:00Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:26:20Z,INFO,Ingress edge router rtr-04: proxy pass request #5079 status=200 in 28ms
+2026-11-12T18:26:40Z,WARN,Ambiguous incident signature: network layer vs DNS resolver partition vs hardware flapping. Safe automated remediation not possible without outage risk. Manual escalation required.
+2026-11-12T18:27:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:27:20Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:27:40Z,INFO,Ingress edge router rtr-04: proxy pass request #5083 status=200 in 28ms
+2026-11-12T18:28:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:28:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:28:40Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:29:00Z,INFO,Ingress edge router rtr-04: proxy pass request #5087 status=200 in 28ms
+2026-11-12T18:29:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:29:40Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:30:00Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:30:20Z,INFO,Ingress edge router rtr-04: proxy pass request #5091 status=200 in 28ms
+2026-11-12T18:30:40Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:31:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:31:20Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:31:40Z,INFO,Ingress edge router rtr-04: proxy pass request #5095 status=200 in 28ms
+2026-11-12T18:32:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:32:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:32:40Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:33:00Z,INFO,Ingress edge router rtr-04: proxy pass request #5099 status=200 in 28ms
+2026-11-12T18:33:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:33:40Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:34:00Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:34:20Z,INFO,Ingress edge router rtr-04: proxy pass request #5103 status=200 in 28ms
+2026-11-12T18:34:40Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:35:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"
+2026-11-12T18:35:20Z,WARN,"DNS resolver 10.0.0.2 jitter: response latency 1850ms, packet dropped on interface eth0"
+2026-11-12T18:35:40Z,INFO,Ingress edge router rtr-04: proxy pass request #5107 status=200 in 28ms
+2026-11-12T18:36:00Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/ingress.py"", line 142, in route_request
+    resp = client.get(upstream_url, timeout=2.0)
+  File ""/usr/local/lib/python3.12/http/client.py"", line 1331, in getresponse
+ConnectionResetError: [Errno 104] Connection reset by peer"
+2026-11-12T18:36:20Z,ERROR,"Traceback (most recent call last):
+  File ""/app/services/dns_cache.py"", line 58, in resolve_target
+    answers = resolver.resolve(hostname, 'A')
+socket.gaierror: [Errno -3] Temporary failure in name resolution during query to core-db.internal"

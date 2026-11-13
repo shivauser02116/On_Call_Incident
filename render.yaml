@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: oncall-agent
+    runtime: docker
+    plan: free
+    region: oregon         # change to: frankfurt, singapore, ohio, virginia — pick closest to your users
+    dockerfilePath: ./Dockerfile
+    # Override the Dockerfile CMD so the server binds to Render's injected $PORT.
+    # The Dockerfile hardcodes --port 8080; Render assigns a different port at runtime.
+    dockerCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /health
+    numInstances: 1
+    autoDeploy: false
+
+    envVars:
+      # ── Secrets — set these values yourself in the Render dashboard ──────
+      # Leave the values blank in the dashboard on first deploy; Render will
+      # prompt you to fill them in. Never put real values in this file.
+
+      - key: ANTHROPIC_API_KEY
+        sync: false          # Render will not sync this from render.yaml — you type it in the dashboard
+
+      - key: SECRET_KEY
+        sync: false          # Minimum 32 characters. Generate with: openssl rand -base64 32
+
+      - key: ADMIN_USERNAME
+        sync: false          # The login name you will use to sign in (e.g. admin)
+
+      - key: ADMIN_PASSWORD
+        sync: false          # Minimum 12 characters, must include uppercase, digit, and symbol
+
+      # ── Application configuration — safe to commit as-is ─────────────────
+
+      - key: PRODUCTION
+        value: "true"        # Enables HTTPS-only cookies and HSTS
+
+      - key: AGENT_MODE
+        value: live          # Use "mock" for a free test run with no Anthropic API spend
+
+      - key: CLAUDE_MODEL
+        value: claude-sonnet-4-5   # Or any claude-* model available to your API key
+
+      - key: DATABASE_URL
+        value: sqlite:///./oncall.db   # Ephemeral SQLite — resets on every deploy and sleep
+
+      # ── Set this AFTER your first deploy (see DEPLOY_RENDER.md Step 3) ───
+
+      - key: CORS_ORIGIN
+        sync: false          # Must be your Render service URL, e.g. https://oncall-agent.onrender.com
+
+      - key: LOG_LEVEL
+        value: INFO

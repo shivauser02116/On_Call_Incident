@@ -25,8 +25,8 @@ class Settings(BaseSettings):
 
     # ── Required ───────────────────────────────────────────────────────────
     ANTHROPIC_API_KEY: str = Field(
-        ...,
-        description="Anthropic API key — REQUIRED",
+        default="mock-key-not-used",
+        description="Anthropic API key — required for live mode",
     )
     SECRET_KEY: str = Field(
         ...,

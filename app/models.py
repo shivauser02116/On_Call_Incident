@@ -81,6 +81,14 @@ class ApproveFixRequest(BaseModel):
     csrf_token: str = Field(min_length=32, max_length=128)
 
 
+class RecordRejectionRequest(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    scenario_id: str = Field(min_length=1, max_length=128)
+    fix_id: Optional[str] = Field(None, max_length=128)
+    csrf_token: str = Field(min_length=32, max_length=128)
+
+
 # ── Agent Output Models (returned from LLM, Pydantic-validated) ────────────
 
 class EvidenceItem(BaseModel):

@@ -37,6 +37,7 @@ from app.models import (
     ALLOWED_FIX_IDS,
     ALLOWED_SCENARIOS,
     ApproveFixRequest,
+    RecordRejectionRequest,
     DeleteIncidentMemoryRequest,
     SaveIncidentMemoryRequest,
     TriggerAlertRequest,
@@ -410,6 +411,42 @@ async def approve_investigation_fix(
         "blast_radius": blast_radius,
         "message": f"Fix {fix_id} (Level {risk_level}) approved and executed in simulation.",
     })
+
+
+@router.post("/audit/rejection")
+@limiter.limit("30/minute")
+async def record_audit_rejection(
+    request: Request,
+    body: RecordRejectionRequest,
+    user: AuthenticatedUser = Depends(require_auth),
+) -> JSONResponse:
+    """Explicitly log a fix rejection event in the audit log."""
+    csrf_cookie = request.cookies.get(CSRF_COOKIE_NAME)
+    if not verify_csrf_token(body.csrf_token, csrf_cookie):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing CSRF token",
+        )
+
+    try:
+        valid_sid = validate_scenario_id(body.scenario_id)
+    except ValueError:
+        valid_sid = "unknown"
+
+    client_ip = request.client.host if request.client else "unknown"
+    db.log_audit(
+        action="fix_rejected",
+        user_id=user.user_id,
+        target_id=valid_sid,
+        details={
+            "scenario_id": valid_sid,
+            "fix_id": body.fix_id or "fix_rejected",
+            "decision": "rejected",
+            "note": "Operator rejected the proposed fix on the decision screen.",
+        },
+        ip_address=client_ip,
+    )
+    return JSONResponse(content={"status": "rejected", "action": "fix_rejected"})
 
 
 # ── Scenario Deploys (Phase 12) ────────────────────────────────────────────

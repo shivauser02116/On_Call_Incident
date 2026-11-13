@@ -5,7 +5,7 @@ import { useNav } from '../nav'
 import { Card, Chip, Label, PageHeader, PrimaryButton, RiskScale, type Risk } from '../components/ui'
 
 export function Fix() {
-  const { go, investigationResult, rehearsalResult } = useNav()
+  const { go, investigationResult, rehearsalResult, selectedScenario } = useNav()
 
   const proposedFix = investigationResult?.proposed_fix
   const fixAction = proposedFix?.action || 'Re-create index on orders(customer_id)'
@@ -125,7 +125,7 @@ export function Fix() {
 
         <div className="mt-6">
           <div className="mb-3 text-[13px] text-mute">Response time during the practice run</div>
-          <PracticeChart />
+          <PracticeChart scenarioId={selectedScenario} />
         </div>
       </Card>
     </Shell>

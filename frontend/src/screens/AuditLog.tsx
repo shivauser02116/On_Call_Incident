@@ -218,6 +218,7 @@ export function AuditLog() {
                         row.action.includes('blocked') ||
                         row.action.includes('escalate') ||
                         row.action.includes('lock')
+                      const isRejected = row.action.includes('reject')
                       return (
                         <tr
                           key={row.id}
@@ -230,7 +231,9 @@ export function AuditLog() {
                           <td className="px-4 py-3 whitespace-nowrap">
                             <span
                               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold ${
-                                isSecurityEvent
+                                isRejected
+                                  ? 'bg-bad/15 text-bad'
+                                  : isSecurityEvent
                                   ? 'bg-warn/15 text-warn'
                                   : row.action.includes('approved')
                                   ? 'bg-ok/15 text-ok'

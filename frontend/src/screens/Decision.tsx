@@ -215,17 +215,30 @@ export function Decision() {
   ]
 
   const handleDecision = async (action: 'approve' | 'reject') => {
-    if (!investigationId) {
-      // If demo navigation with no real investigation, proceed directly
-      if (action === 'approve') go('success')
-      else go('theories')
-      return
-    }
-
     setSubmitting(true)
     setErrorMsg(null)
     try {
       const csrfToken = getCsrfToken()
+      if (!investigationId) {
+        // If demo navigation with no active investigation, still record rejection to audit log
+        if (action === 'reject') {
+          await fetch('/api/audit/rejection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              scenario_id: selectedScenario || 'bad_deploy_slow_queries',
+              fix_id: proposedFix?.fix_id || 'fix_rejected',
+              csrf_token: csrfToken,
+            }),
+            credentials: 'same-origin',
+          }).catch(() => null)
+          go('theories')
+        } else {
+          go('success')
+        }
+        return
+      }
+
       const res = await fetch(`/api/investigations/${investigationId}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

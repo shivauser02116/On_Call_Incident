@@ -126,15 +126,19 @@ try:
 
         # Step 3: Trigger scenario & watch Investigate stream
         page.click("button:has-text('Start investigation')")
-        page.wait_for_url(lambda u: "theories" in u, timeout=15000)
+        page.wait_for_selector("text=Checks complete. Review the findings, then continue.", timeout=15000)
         ss3 = str(SCREENSHOTS_DIR / "03_investigate_completed.png")
         page.screenshot(path=ss3)
         record(
             "Step 3: Trigger scenario & stream investigation",
             True,
-            "Investigation stream initiated via SSE, 4 telemetry checks executed, auto-transitioned to Theories",
+            "Investigation stream initiated via SSE, checks executed with pacing, stayed on Investigate screen",
             ss3,
         )
+
+        # Transition to Theories manually via 'See likely causes'
+        page.click("button:has-text('See likely causes')")
+        page.wait_for_url(lambda u: "theories" in u, timeout=5000)
 
         # Step 4: Open Theories court
         page.wait_for_selector("text=likely causes", timeout=8000)
@@ -242,7 +246,9 @@ try:
             page.wait_for_selector("select", timeout=8000)
             page.select_option("select", sid)
             page.get_by_role("button", name="Start investigation").click()
-            page.wait_for_url(lambda u: "theories" in u, timeout=15000)
+            page.wait_for_selector("text=Checks complete. Review the findings, then continue.", timeout=15000)
+            page.get_by_role("button", name="See likely causes").click()
+            page.wait_for_url(lambda u: "theories" in u, timeout=8000)
             page.get_by_role("button", name="Review fix").click()
             page.wait_for_url(lambda u: "fix" in u, timeout=8000)
             page.get_by_role("button", name="Continue to decision").click()

@@ -111,6 +111,7 @@ export function Investigate() {
     investigationResult,
     agentPlan,
     setAgentPlan,
+    setAgentPlanMeta,
     replanReason,
     setReplanReason,
     setAgentTrace,
@@ -143,6 +144,26 @@ export function Investigate() {
     }, 1000)
 
     const abortCtrl = new AbortController()
+
+    // Presentation pacing: queue completed steps and show them with >= 400ms between each
+    const doneQueue: Array<{ tool: string; finding: string }> = []
+    let draining = false
+    function drainQueue() {
+      if (draining || doneQueue.length === 0) return
+      draining = true
+      const { tool, finding } = doneQueue.shift()!
+      setChecks((prev) =>
+        prev.map((c) => (c.tool === tool ? { ...c, state: 'done', finding } : c))
+      )
+      if (doneQueue.length > 0) {
+        setTimeout(() => {
+          draining = false
+          drainQueue()
+        }, 420)
+      } else {
+        draining = false
+      }
+    }
 
     async function streamInvestigation() {
       try {
@@ -215,6 +236,7 @@ export function Investigate() {
       } else if (ev.type === 'plan') {
         if (Array.isArray(ev.steps)) {
           setAgentPlan(ev.steps)
+          setAgentPlanMeta({ source: ev.source === 'model' ? 'model' : 'standard', isMock: ev.is_mock !== false })
         }
       } else if (ev.type === 'replan') {
         if (ev.reason) {
@@ -222,6 +244,7 @@ export function Investigate() {
         }
         if (Array.isArray(ev.steps)) {
           setAgentPlan(ev.steps)
+          setAgentPlanMeta({ source: ev.source === 'model' ? 'model' : 'standard', isMock: ev.is_mock !== false })
         }
       } else if (ev.type === 'tool_call_start') {
         const tool = ev.tool_name
@@ -234,11 +257,9 @@ export function Investigate() {
       } else if (ev.type === 'tool_call_result') {
         const tool = ev.tool_name
         const finding = extractFinding(tool, ev.data)
-        setChecks((prev) =>
-          prev.map((c) =>
-            c.tool === tool ? { ...c, state: 'done', finding } : c
-          )
-        )
+        // Queue the 'done' update for 400ms paced display
+        doneQueue.push({ tool, finding })
+        drainQueue()
         setAgentPlan((prev) =>
           prev.map((s) => (s.tool === tool ? { ...s, status: 'completed' } : s))
         )
@@ -250,6 +271,7 @@ export function Investigate() {
             arguments: ev.arguments || {},
             summary: ev.summary || finding,
             durationMs: ev.duration_ms || 24,
+            isMock: ev.is_mock !== false,
           },
         ])
       } else if (ev.type === 'rehearsal_result') {
@@ -263,13 +285,13 @@ export function Investigate() {
             toolCalls: ev.tool_calls_used || 5,
             tokens: ev.tokens_used || 1720,
             elapsedMs: ev.elapsed_ms || 2100,
+            isMock: ev.is_mock !== false,
           })
         }
         setChecks((prev) => prev.map((c) => ({ ...c, state: 'done' })))
         setAgentPlan((prev) => prev.map((s) => ({ ...s, status: 'completed' })))
         setDiagnosed(true)
-        // Transition to Theories as required by the spec
-        go('theories')
+        // Stay on Investigate — user clicks 'See likely causes' manually
       } else if (ev.type === 'error') {
         setError(ev.message || 'Investigation failed.')
       }
@@ -296,8 +318,8 @@ export function Investigate() {
             error
               ? error
               : diagnosed
-              ? 'The checks are finished. Review the likely causes.'
-              : 'Read-only for now. You will move on automatically when the checks finish.'
+              ? 'Checks complete. Review the findings, then continue.'
+              : 'Read-only for now. The agent is running checks.'
           }
         >
           <PrimaryButton disabled={!diagnosed} onClick={() => go('theories')}>
@@ -343,7 +365,7 @@ export function Investigate() {
               <span className="grid size-6 place-items-center rounded-md bg-accent/15 text-accent">
                 <Icon name="target" size={14} />
               </span>
-              <h2 className="text-[14.5px] font-semibold text-ink">Investigation Plan</h2>
+              <h2 className="text-[14.5px] font-semibold text-ink">{agentPlan.length > 0 ? 'Investigation Plan' : 'Standard checks'}</h2>
               <span className="text-[12px] text-mute">
                 ({agentPlan.filter((s) => s.status === 'completed').length} of {agentPlan.length} completed)
               </span>

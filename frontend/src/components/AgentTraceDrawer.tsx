@@ -4,8 +4,11 @@ import { Card, Chip } from './ui'
 import { useNav } from '../nav'
 
 export function AgentTraceDrawer() {
-  const { agentTrace, agentTotals, replanReason } = useNav()
+  const { agentTrace, agentTotals, replanReason, agentPlanMeta } = useNav()
   const [open, setOpen] = useState(false)
+
+  const isMock = agentTotals?.isMock !== false // defaults to simulated unless explicitly false
+  const simLabel = isMock ? ' (simulated)' : ''
 
   const toolCallsCount = agentTotals?.toolCalls || agentTrace.length
   const tokensUsed = agentTotals?.tokens || (agentTrace.length ? 450 + agentTrace.length * 280 : 0)
@@ -26,14 +29,14 @@ export function AgentTraceDrawer() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[14.5px] font-semibold text-ink">Agent Trace</span>
-              <span className="text-[12px] text-mute">(raw telemetry & timings)</span>
+              <span className="text-[12px] text-mute">(raw telemetry &amp; timings{isMock ? ' — mock mode' : ''})</span>
             </div>
             <div className="text-[12px] text-mute">
               {toolCallsCount > 0 ? (
                 <span>
                   {toolCallsCount} tool {toolCallsCount === 1 ? 'call' : 'calls'}
-                  {tokensUsed > 0 && ` · ~${tokensUsed.toLocaleString()} tokens`}
-                  {elapsedSec && ` · ${elapsedSec}s elapsed`}
+                  {tokensUsed > 0 && ` · ~${tokensUsed.toLocaleString()} tokens${simLabel}`}
+                  {elapsedSec && ` · ${elapsedSec}s${simLabel}`}
                 </span>
               ) : (
                 'Collapsed · Click to view developer telemetry'
@@ -55,7 +58,7 @@ export function AgentTraceDrawer() {
       </button>
 
       {open && (
-        <div className="border-t border-line bg-bg/40 p-5 space-y-4">
+        <div data-testid="agent-trace-body" className="border-t border-line bg-bg/40 p-5 space-y-4">
           {/* Summary metrics header */}
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-xl border border-line bg-panel p-3">
@@ -67,12 +70,18 @@ export function AgentTraceDrawer() {
               <div className="mt-1 font-mono text-[18px] font-semibold text-ink">
                 {tokensUsed > 0 ? `~${tokensUsed.toLocaleString()}` : '—'}
               </div>
+              {isMock && tokensUsed > 0 && (
+                <div className="mt-0.5 text-[10px] text-faint italic">simulated</div>
+              )}
             </div>
             <div className="rounded-xl border border-line bg-panel p-3">
               <div className="text-[11.5px] uppercase tracking-wider text-mute">Total Elapsed</div>
               <div className="mt-1 font-mono text-[18px] font-semibold text-ink">
                 {elapsedSec ? `${elapsedSec}s` : '—'}
               </div>
+              {isMock && elapsedSec && (
+                <div className="mt-0.5 text-[10px] text-faint italic">simulated</div>
+              )}
             </div>
           </div>
 
@@ -111,7 +120,7 @@ export function AgentTraceDrawer() {
                         </code>
                       </div>
                       <span className="rounded-full bg-panel-2 px-2.5 py-0.5 font-mono text-[11.5px] text-mute">
-                        {step.durationMs}ms
+                        {step.durationMs}ms{step.isMock !== false ? ' (simulated)' : ''}
                       </span>
                     </div>
 

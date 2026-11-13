@@ -76,12 +76,19 @@ export interface TraceStep {
   arguments: Record<string, any>
   summary: string
   durationMs: number
+  isMock?: boolean
 }
 
 export interface AgentTotals {
   toolCalls: number
   tokens: number
   elapsedMs: number
+  isMock?: boolean
+}
+
+export interface PlanMeta {
+  source: 'model' | 'standard'
+  isMock?: boolean
 }
 
 export function getCsrfToken(): string {
@@ -117,6 +124,8 @@ type Nav = {
   setCurrentUser: (u: UserProfile | null) => void
   agentPlan: PlanStep[]
   setAgentPlan: React.Dispatch<React.SetStateAction<PlanStep[]>>
+  agentPlanMeta: PlanMeta
+  setAgentPlanMeta: React.Dispatch<React.SetStateAction<PlanMeta>>
   replanReason: string | null
   setReplanReason: React.Dispatch<React.SetStateAction<string | null>>
   agentTrace: TraceStep[]
@@ -137,6 +146,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
   const [rehearsalResult, setRehearsalResult] = useState<RehearsalResult | null>(null)
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null)
   const [agentPlan, setAgentPlan] = useState<PlanStep[]>([])
+  const [agentPlanMeta, setAgentPlanMeta] = useState<PlanMeta>({ source: 'standard', isMock: true })
   const [replanReason, setReplanReason] = useState<string | null>(null)
   const [agentTrace, setAgentTrace] = useState<TraceStep[]>([])
   const [agentTotals, setAgentTotals] = useState<AgentTotals | null>(null)
@@ -211,6 +221,8 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
         setCurrentUser,
         agentPlan,
         setAgentPlan,
+        agentPlanMeta,
+        setAgentPlanMeta,
         replanReason,
         setReplanReason,
         agentTrace,
